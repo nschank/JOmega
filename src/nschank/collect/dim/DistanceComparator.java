@@ -6,11 +6,13 @@ import static nschank.collect.dim.Dimensionals.sqdistance;
 
 
 /**
+ * Created by Nicolas Schank for package nschank.collect.dim Created 13 Feb 2013 Last updated 25 Mar 2014
+ * <p/>
  * A Comparator that compares based on how far it's two compared objects are from a single source given at construction.
  * Uses hashcode to break ties.
  *
  * @author Nicolas Schank
- * @version 1.1
+ * @version 2.1
  * @since 25 Mar 2014
  */
 public class DistanceComparator implements Comparator<Dimensional>

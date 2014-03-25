@@ -4,11 +4,9 @@ import nschank.note.Immutable;
 
 
 /**
- * <p>Created by Nicolas Schank for package nschank.collect.dim </p>
+ * Created by Nicolas Schank for package nschank.collect.dim Created on 26 Feb 2014 Last updated on 26 Feb 2014
  * <p/>
- * <p>Created on 26 Feb 2014</p> <p>Last updated on 26 Feb 2014</p>
- * <p/>
- * <p>A Vector class, complete with most to all common vector operations.</p>
+ * A Vector class, complete with common vector operations.
  *
  * @author nschank, Brown University
  * @version 1.2
@@ -20,11 +18,11 @@ public class Vector extends Point
 	/**
 	 * The Origin in 2D space.
 	 */
-	public static final Dimensional ZERO_2D = new Vector(Point.ZERO_2D);
+	public static final Vector ZERO_2D = new Vector(Point.ZERO_2D);
 	/**
 	 * The Origin in 3D space.
 	 */
-	public static final Dimensional ZERO_3D = new Vector(Point.ZERO_3D);
+	public static final Vector ZERO_3D = new Vector(Point.ZERO_3D);
 	/**
 	 * The value of the magnitude, calculated at constructor.
 	 */
@@ -63,7 +61,7 @@ public class Vector extends Point
 	 *
 	 * @return An origin point in that many dimensions
 	 */
-	public static Dimensional zero(int dim)
+	public static Vector zero(int dim)
 	{
 		if(dim < 2) throw new OneDimensionalPointException();
 		if(dim == 2) return Vector.ZERO_2D;
@@ -76,7 +74,7 @@ public class Vector extends Point
 	 * Finds the cross product of this (2D or 3D) vector and the given (2D or 3D) vector
 	 *
 	 * @param v
-	 * 		Another Vector (also in 2D or 3D)
+	 * 		Another Vector (in 3D)
 	 *
 	 * @return The cross product vector of this Vector and the given Vector
 	 *
@@ -99,8 +97,8 @@ public class Vector extends Point
 	}
 
 	/**
-	 * <p>Finds the dot product between this Vector and another Vector. If the two Vectors are of different
-	 * dimensionality, reduces the larger one so that the dot product exists.</p>
+	 * Finds the dot product between this Vector and another Vector. If the two Vectors are of different dimensionality,
+	 * reduces the larger one so that the dot product exists.
 	 *
 	 * @param v
 	 * 		A Vector to dot with this Vector
@@ -243,7 +241,7 @@ public class Vector extends Point
 	}
 
 	/**
-	 * <p>A Cross Product failing to function correctly</p>
+	 * A Cross Product failing to function correctly
 	 */
 	private class CrossProductError extends Error
 	{

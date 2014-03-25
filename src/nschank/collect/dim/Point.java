@@ -23,15 +23,15 @@ public class Point implements Dimensional
 	/**
 	 * A Cache of Origins that the user requests
 	 */
-	private static final Map<Integer, Dimensional> ORIGIN = new Cache<>(10);
+	private static final Map<Integer, Point> ORIGIN = new Cache<>(10);
 	/**
 	 * The Origin in 2D space.
 	 */
-	public static final Dimensional ZERO_2D = new Point(0.0d, 0.0d);
+	public static final Point ZERO_2D = new Point(0.0d, 0.0d);
 	/**
 	 * The Origin in 3D space.
 	 */
-	public static final Dimensional ZERO_3D = new Point(0.0d, 0.0d, 0.0d);
+	public static final Point ZERO_3D = new Point(0.0d, 0.0d, 0.0d);
 	/**
 	 * All coordinates as an array of doubles.
 	 */
@@ -58,6 +58,7 @@ public class Point implements Dimensional
 	 */
 	public Point(double... coordinates)
 	{
+		if(coordinates.length < 2) throw new OneDimensionalPointException();
 		this.coordinates = Arrays.copyOf(coordinates, coordinates.length);
 	}
 
@@ -88,7 +89,7 @@ public class Point implements Dimensional
 	 *
 	 * @return An origin point in that many dimensions
 	 */
-	public static Dimensional zero(int dim)
+	public static Point zero(int dim)
 	{
 		if(dim < 2) throw new OneDimensionalPointException();
 		if(dim == 2) return ZERO_2D;
@@ -97,7 +98,7 @@ public class Point implements Dimensional
 		if(ORIGIN.containsKey(dim)) return ORIGIN.get(dim);
 		else
 		{
-			Dimensional origin = new Point(dim);
+			Point origin = new Point(dim);
 			ORIGIN.put(dim, origin);
 			return origin;
 		}

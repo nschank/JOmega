@@ -1,8 +1,12 @@
 package nschank.collect.dim;
 
 /**
- * @author Nicolas Schank
- * @version 13-Feb-13-0.5
+ * Created by Nicolas Schank for package nschank.collect.dim Created 13 Feb 2014 Last updated 25 Mar 2014
+ * <p/>
+ * A Utility class for dealing with Dimensional objects.
+ *
+ * @author nschank, Brown University
+ * @version 2.1
  */
 public final class Dimensionals
 {

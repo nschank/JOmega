@@ -1,7 +1,7 @@
 package nschank.collect.dim;
 
 /**
- * Created on 13 Feb 2013 for package nschank.collect.dim Last updated on 25 Feb 2014
+ * Created by Nicolas Schank for package nschank.collect.dim Created 13 Feb 2013 Last updated on 25 Feb 2014
  * <p/>
  * A Dimensional object has k coordinates represented by {@code double}'s. Dimensionals must know all of their
  * coordinates, be able to get any of those coordinates on command, and must know how many coordinates they have.
