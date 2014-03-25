@@ -4,12 +4,14 @@ import nschank.note.Immutable;
 
 
 /**
- * Created by Nicolas Schank for package nschank.collect.dim Created on 26 Feb 2014 Last updated on 26 Feb 2014
- * <p/>
+ * Created by Nicolas Schank for package nschank.collect.dim
+ * Created on 26 Feb 2014
+ * Last updated on 25 Mar 2014
+ *
  * A Vector class, complete with common vector operations.
  *
  * @author nschank, Brown University
- * @version 1.2
+ * @version 1.2.2
  * @since 26 Feb 2014
  */
 @Immutable

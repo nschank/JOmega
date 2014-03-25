@@ -8,8 +8,10 @@ import java.util.Map;
 
 
 /**
- * Created by Nicolas Schank for package nschank.collect.dim Created on 25 Feb 2014 Last updated 26 Feb 2014
- * <p/>
+ * Created by Nicolas Schank for package nschank.collect.dim
+ * Created on 25 Feb 2014
+ * Last updated 26 Feb 2014
+ *
  * The flagship class of the Dimensional package. Represents a Cartesian point in space, with at least an x and y, as
  * well as the possibility of further coordinates.
  *
