@@ -320,7 +320,7 @@ public class Application extends SwingFrontEnd
 		this.size = new Vector(newSize.x, newSize.y);
 		for(Screen screen : this.screens)
 		{
-			screen.onResize(newSize);
+			screen.onResize(this.size);
 		}
 	}
 
