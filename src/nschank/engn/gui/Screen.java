@@ -1,6 +1,6 @@
 package nschank.engn.gui;
 
-import cs195n.Vec2i;
+import nschank.collect.dim.Dimensional;
 
 import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
@@ -20,10 +20,6 @@ import java.awt.event.MouseWheelEvent;
  */
 public interface Screen
 {
-	/**
-	 * @return The Application this Screen is living under.
-	 */
-	public Application getApplication();
 	/**
 	 * Whether or not to pass draw events below to other screens.
 	 */
@@ -108,7 +104,7 @@ public interface Screen
 	 * @param newSize
 	 * 		- The new size of the screen in pixels.
 	 */
-	public void onResize(Vec2i newSize);
+	public void onResize(Dimensional newSize);
 	/**
 	 * What to do when a tick occurs.
 	 *
