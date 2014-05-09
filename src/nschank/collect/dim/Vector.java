@@ -83,7 +83,7 @@ public class Vector extends Point
 	 * @throws nschank.collect.dim.Vector.CrossProductError
 	 * 		If either Vector is not 2D or 3D
 	 */
-	public Vector crossProduct(Vector v)
+	public Vector crossProduct(Dimensional v)
 	{
 		if(this.getDimensions() > 3 || v.getDimensions() > 3) throw new CrossProductError();
 
@@ -107,7 +107,7 @@ public class Vector extends Point
 	 *
 	 * @return The dot product of this Vector and v
 	 */
-	public double dotProduct(Vector v)
+	public double dotProduct(Dimensional v)
 	{
 		double d = 0.0d;
 		for(int i = 0; i < Math.min(this.getDimensions(), v.getDimensions()); i++)
@@ -166,7 +166,7 @@ public class Vector extends Point
 	 *
 	 * @return This Vector minus the given Vector
 	 */
-	public Vector minus(Vector v)
+	public Vector minus(Dimensional v)
 	{
 		double[] coord = new double[this.getDimensions()];
 		for(int i = 0; i < Math.max(this.getDimensions(), v.getDimensions()); i++)
@@ -192,12 +192,47 @@ public class Vector extends Point
 	 *
 	 * @return This Vector added to the given Vector
 	 */
-	public Vector plus(Vector v)
+	public Vector plus(Dimensional v)
 	{
 		double[] coord = new double[this.getDimensions()];
 		for(int i = 0; i < Math.max(this.getDimensions(), v.getDimensions()); i++)
 			coord[i] = ((i < this.getDimensions()) ? this.getCoordinate(i) : 0) + ((i < v.getDimensions()) ? v.getCoordinate(i) : 0);
 		return new Vector(coord);
+	}
+
+	/**
+	 * Returns the component of this vector along the axis specified by {@code other}.
+	 *
+	 * @param other
+	 * 		the axis onto which to project this vector
+	 *
+	 * @return the projection of this vector in the axis specified by {@code other}
+	 *
+	 * Remodelled from cs195n.Vec2f
+	 */
+	public final Vector projectOnto(Vector other)
+	{
+		return other.smult(this.dotProduct(other) / other.mag2());
+	}
+
+	/**
+	 * Returns the projection of the point represented by this vector onto a line specified by
+	 * {@code p1} and {@code p2}, two points on the line.
+	 *
+	 * @param p1
+	 * 		a point on the line onto which to project
+	 * @param p2
+	 * 		another point on the line onto which to project
+	 *
+	 * @return the projection of the point represented by this vector onto a line specified
+	 * by {@code p1} and {@code p2}
+	 *
+	 * Remodelled from cs195n.Vec2f
+	 */
+	public final Vector projectOntoLine(Dimensional p1, Dimensional p2)
+	{
+		Vector between = new Vector(p1).minus(p2);
+		return new Vector(p1).plus(between.smult(this.minus(p1).dotProduct(between) / between.mag2()));
 	}
 
 	/**
