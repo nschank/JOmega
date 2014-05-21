@@ -11,9 +11,13 @@ import java.awt.event.MouseWheelEvent;
 /**
  * Created by Nicolas Schank for package nschank.engn.gui
  * Created 9 Sep 2013
- * Last updated on 8 May 2014
+ * Last updated on 20 May 2014
  *
  * A Screen, a single visible and/or interactable section or element of the Application.
+ *  Often encompass several different interactions as a container: e.g. a menu screen or
+ *  a settings dialog. May be "transparent," which allows other screens to be drawn below
+ *  this one. May also pass different events below, including ticks, but is not required
+ *  to pass any of them in any particular combination.
  *
  * @author Nicolas Schank
  * @version 2.0
@@ -130,6 +134,7 @@ public interface Screen
 	/**
 	 * Whether or not this Screen wants to receive all ticks, even if the Screens above it are not
 	 * tick-transparent.
+	 * TODO incorporate in Application
 	 */
 	public boolean needsAllTicks();
 }
