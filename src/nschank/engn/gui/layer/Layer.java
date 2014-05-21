@@ -6,7 +6,7 @@ import java.awt.Graphics2D;
 
 
 /**
- * Created by Nicolas Schank for package nschank.engn.gui
+ * Created by Nicolas Schank for package nschank.engn.gui.layer
  * Created on 09 May 2014
  * Last updated on 20 May 2014
  *

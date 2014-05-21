@@ -8,7 +8,7 @@ import java.awt.Graphics2D;
 
 
 /**
- * Created by Nicolas Schank for package nschank.engn.gui
+ * Created by Nicolas Schank for package nschank.engn.gui.layer
  * Created on 24 Sep 2013
  * Last updated on 20 May 2014
  *
