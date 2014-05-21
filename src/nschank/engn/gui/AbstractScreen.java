@@ -1,7 +1,7 @@
 package nschank.engn.gui;
 
 import nschank.collect.dim.Dimensional;
-import nschank.engn.gui.layer.AbstractLayer;
+import nschank.engn.gui.layer.Layer;
 
 import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
@@ -18,48 +18,55 @@ import java.util.Set;
  * Created on 08 May 2014
  * Last updated on 08 May 2014
  *
- * A Screen is a usable element in the Omega Engine. This does some of the work for
- * those who would make one.
+ * A Screen is a usable element in the Omega Engine. This implementation does some of the work for
+ * those who would make one; specifically:
+ * 	-  Uses the Layer abstraction (and the related subpackage .layer) to
+ * 	   represent a single display method within the screen.
+ * 	-  Defaults to being nontransparent and not allowing events to pass through this screen.
+ * 	-  Performs no action on any event
  *
  * @author nschank, Brown University
  * @version 1.1
  */
 public abstract class AbstractScreen implements Screen
 {
-	private List<AbstractLayer> layers;
+	private final List<Layer> layers;
 	private final Application myApp;
-	/* We need to allow layers to ask for other layers to be removed,
-	 * especially themselves.
-	 */
-	private Set<AbstractLayer> toRemove;
+
+	/* DUE TO CONCURRENCY PROBLEMS PRESENTED BY addLayer AND removeLayer */
+	private final Set<Layer> toRemove;
+	private final Set<Layer> toAdd;
 
 	/**
-	 * Creates a Screen
+	 * Creates a Screen; AbstractScreens should be able to kill themselves,
+	 *  which requires asking the Application to forget about itself.
 	 *
 	 * @param engine
 	 * 		- What Application this Screen receives information from
 	 */
-	public AbstractScreen(Application engine)
+	protected AbstractScreen(Application engine)
 	{
 		this.myApp = engine;
 		this.layers = new ArrayList<>();
 		this.toRemove = new HashSet<>();
+		this.toAdd = new HashSet<>();
 	}
 
 	/**
 	 * Adds a Layer to this Screen. Layers are always placed atop previous layers.
-	 * Layers are an abstraction used by this implementation to represent visible
-	 * objects, similar to layers in, for example, Flash or Photoshop.
+	 * Layers are an abstraction used by this implementation to represent a display
+	 * method for different elements onscreen. They can be used to represent a single
+	 * element (such as a button), but are more commonly used similarly to a LayoutManager.
 	 *
-	 * Generally, the game screen is implemented to include some singular, central
-	 * Layer which the player interacts with primarily. Other examples of Layers
-	 * might include a button, dropdown, or
+	 * For more information, see the Layer class.
 	 *
-	 * @param layer
+	 * Can be used safely by child layers to add new layers.
+	 *
+	 * @param layer A Layer to add to this Screen, atop all other Layers.
 	 */
-	public final void addLayer(AbstractLayer layer)
+	public final void addLayer(Layer layer)
 	{
-		this.layers.add(layer);
+		this.toAdd.add(layer);
 	}
 
 	/**
@@ -104,14 +111,17 @@ public abstract class AbstractScreen implements Screen
 
 	/**
 	 * Draws all the layers in this Screen.
-	 * The entire point of the Layer system is to
+	 * The entire point of the Layer system is to abstract away different methods
+	 *  of displaying different objects; Layers can be thought of as similar to, but
+	 *  (hopefully) simpler than, LayoutManagers in Swing. As such, any attempt to draw
+	 *  or display anything should be done through a Layer that has been added.
 	 *
 	 * @param g
 	 * 		- Graphics object on which to draw.
 	 */
 	public final void onDraw(Graphics2D g)
 	{
-		for(AbstractLayer l : this.layers)
+		for(Layer l : this.layers)
 			l.draw(g);
 	}
 
@@ -224,20 +234,24 @@ public abstract class AbstractScreen implements Screen
 	}
 
 	/**
-	 * Automatically alerts all Layers of the resize.
+	 * Automatically alerts all Layers of the resize. Resizing should
+	 *  be relegated to Layers, not Screens, so this method is final.
 	 *
 	 * @param newSize
 	 * 		- The new size of the screen in pixels.
 	 */
 	@Override
-	public void onResize(Dimensional newSize)
+	public final void onResize(Dimensional newSize)
 	{
-		for(AbstractLayer l : this.layers)
+		for(Layer l : this.layers)
 			l.resize(newSize);
 	}
 
 	/**
 	 * Ticks all layers, then removes any layers that have been removed.
+	 * Similar to drawing, Layers are meant to abstract away the need for Screens
+	 *  to have individual onTick methods. If a Screen needs to do anything on each
+	 *  tick, a Layer which does no drawing (such as an {@code ActionLayer}) would suffice perfectly.
 	 *
 	 * @param nanoSinceLastTick
 	 * 		- Billionths of a second since last tick.
@@ -245,8 +259,15 @@ public abstract class AbstractScreen implements Screen
 	@Override
 	public final void onTick(long nanoSinceLastTick)
 	{
-		for(AbstractLayer l : this.layers)
+		//Add all Layers added in last tick
+		this.layers.addAll(this.toAdd);
+		this.toAdd.clear();
+
+		//Run a tick in all Layers
+		for(Layer l : this.layers)
 			l.onTick(nanoSinceLastTick);
+
+		//Remove all Layers to be removed from the previous tick.
 		this.layers.removeAll(this.toRemove);
 		this.toRemove.clear();
 	}
@@ -285,14 +306,15 @@ public abstract class AbstractScreen implements Screen
 	}
 
 	/**
-	 * Removes a Layer from the Screen. Takes effect on next tick.
+	 * Removes a Layer from the Screen. Takes effect at the end of
+	 *  this tick.
 	 *
 	 * @param layer
 	 * 		The layer to remove.
 	 *
 	 * @return true iff the layer was not due to be removed already
 	 */
-	public final boolean removeLayer(AbstractLayer layer)
+	public final boolean removeLayer(Layer layer)
 	{
 		return this.toRemove.add(layer);
 	}
