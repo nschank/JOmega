@@ -9,7 +9,7 @@ import nschank.collect.dim.Dimensional;
  * Last modified 20 May 2014
  *
  * A Layer which does nothing except draw added shapes in their original positions. Resizing and ticking both have no
- * effect.
+ * effect. Moving a shape manually/directly will have immediate effect.
  *
  * @author nschank, Brown University
  * @version 1.0

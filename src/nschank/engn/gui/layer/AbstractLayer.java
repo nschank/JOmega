@@ -18,7 +18,7 @@ import java.util.List;
  * the Drawable element are used to determine how to draw it.
  *
  * @author nschank, Brown University
- * @version 2013 09 12
+ * @version 1.3
  */
 public abstract class AbstractLayer implements Layer
 {

@@ -1,6 +1,5 @@
 package nschank.engn.gui.layer;
 
-import cs195n.Vec2i;
 import nschank.collect.dim.Dimensional;
 
 import java.awt.Color;
@@ -12,10 +11,8 @@ import java.awt.Graphics2D;
  * Created on 24 Sep 2013
  * Last updated on 20 May 2014
  *
- * A Layer (generally added on the bottom, for relatively obvious reasons)
- * which is of a single color, and simply fills the entire Screen with that
- * color. Perfect for backgrounds. Automatically resizes to fill the entire
- * Screen.
+ * A Layer (generally added on the bottom, for relatively obvious reasons) which is of a single color, and simply fills
+ * the entire Screen with that color. Perfect for backgrounds. Automatically resizes to fill the entire Screen.
  *
  * @author nschank, Brown University
  * @version 2.0
@@ -26,14 +23,23 @@ public class FillLayer implements Layer
 	private int height = 0;
 	private Color color;
 
-	public FillLayer(Color color, Vec2i initialSize)
+	/**
+	 * Initializes a FillLayer.
+	 *
+	 * @param color
+	 * 		A Color with which to fill this Screen
+	 * @param initialSize
+	 * 		The initial sizing of this
+	 */
+	public FillLayer(final Color color, final Dimensional initialSize)
 	{
 		this.color = color;
+		this.width = (int) initialSize.getCoordinate(0);
+		this.height = (int) initialSize.getCoordinate(1);
 	}
 
 	/**
-	 * How to draw this Layer, using a Graphics object.
-	 * Do not clear any areas of the Graphics object that the Layer
+	 * How to draw this Layer, using a Graphics object. Do not clear any areas of the Graphics object that the Layer
 	 * does not occlude, as this will cause other Layers to appear incorrectly.
 	 *
 	 * @param g
@@ -54,6 +60,12 @@ public class FillLayer implements Layer
 		return this.color;
 	}
 
+	/**
+	 * Does nothing automatically.
+	 *
+	 * @param nanosSinceLastTick
+	 * 		The number of billionths of seconds since the last time this method has been called.
+	 */
 	@Override
 	public void onTick(final long nanosSinceLastTick)
 	{

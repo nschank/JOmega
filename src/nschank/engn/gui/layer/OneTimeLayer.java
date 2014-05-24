@@ -26,15 +26,15 @@ public abstract class OneTimeLayer implements Layer
 	private long nanosUntilRemove;
 
 	/**
-	 * Creates a Layer which will only exist for the given number of nanoseconds before being
-	 * removed completely from the AbstractScreen given
+	 * Creates a Layer which will only exist for the given number of nanoseconds before being removed completely from the
+	 * AbstractScreen given.
 	 *
 	 * @param inside
 	 * 		This Layer's parent AbstractScreen
 	 * @param nanosUntilRemove
 	 * 		The number of billionths of seconds that this Layer can be allowed to exist
 	 */
-	public OneTimeLayer(AbstractScreen inside, long nanosUntilRemove)
+	public OneTimeLayer(final AbstractScreen inside, final long nanosUntilRemove)
 	{
 		super();
 		this.inside = inside;
@@ -56,7 +56,7 @@ public abstract class OneTimeLayer implements Layer
 	}
 
 	/**
-	 * Currently, does nothing. Override to make this Layer react.
+	 * Currently, does nothing. Override to make this Layer react to a change in size.
 	 *
 	 * @param newSize
 	 * 		The new size of the Screen.
