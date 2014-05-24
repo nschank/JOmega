@@ -4,8 +4,8 @@ import nschank.collect.dim.Dimensional;
 import nschank.engn.shape.Drawable;
 
 import java.awt.Graphics2D;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 
 /**
@@ -22,23 +22,24 @@ import java.util.List;
  */
 public abstract class AbstractLayer implements Layer
 {
-	private List<Drawable> elements;
+	private Set<Drawable> elements;
 
 	/**
 	 * Creates an AbstractLayer
 	 */
 	protected AbstractLayer()
 	{
-		this.elements = new ArrayList<Drawable>();
+		this.elements = new HashSet<Drawable>();
 	}
 
 	/**
-	 * Adds a visible element to be drawn as part of this layer. No elements given will automatically be ticked.
+	 * Adds a visible element to be drawn as part of this layer. No elements given will automatically be ticked. If add
+	 * is overridden, also override remove or call super.add(Drawable)
 	 *
 	 * @param element
 	 * 		A visible piece of this Layer
 	 */
-	public final void add(final Drawable element)
+	public void add(final Drawable element)
 	{
 		this.elements.add(element);
 	}
@@ -59,13 +60,14 @@ public abstract class AbstractLayer implements Layer
 
 	/**
 	 * Removes an element already given to the AbstractLayer. Returns whether the element was in the list already.
+	 * If remove is overridden, also override add or call super.remove(Drawable)
 	 *
 	 * @param element
 	 * 		A Drawable element to take out of this Layer
 	 *
 	 * @return Whether that element was in the list of drawn elements.
 	 */
-	public final boolean remove(final Drawable element)
+	public boolean remove(final Drawable element)
 	{
 		return this.elements.remove(element);
 	}

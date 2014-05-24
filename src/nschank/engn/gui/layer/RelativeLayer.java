@@ -2,11 +2,12 @@ package nschank.engn.gui.layer;
 
 import nschank.collect.dim.Dimensional;
 import nschank.collect.dim.Vector;
+import nschank.collect.tuple.Quadruple;
 import nschank.collect.tuple.Quintuple;
 import nschank.engn.shape.Drawable;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -26,7 +27,7 @@ import java.util.Collection;
  */
 public class RelativeLayer extends AbstractLayer
 {
-	private Collection<Quintuple<Drawable, Double, Double, Double, Double>> shapes = new ArrayList<>();
+	private Map<Drawable, Quadruple<Double, Double, Double, Double>> shapes = new HashMap<>();
 
 
 	/**
@@ -52,7 +53,7 @@ public class RelativeLayer extends AbstractLayer
 		assert height > 0;
 
 		super.add(index);
-		this.shapes.add(Quintuple.tuple(index, width, height, xpos, ypos));
+		this.shapes.put(index, Quadruple.tuple(width, height, xpos, ypos));
 	}
 
 	/**
@@ -65,6 +66,12 @@ public class RelativeLayer extends AbstractLayer
 	public void onTick(long nanosSinceLastTick)
 	{
 
+	}
+
+	public boolean remove(Drawable index)
+	{
+		//If the latter is true, the former must have been true.
+		return super.remove(index) && this.shapes.remove(index) != null;
 	}
 
 	/**
