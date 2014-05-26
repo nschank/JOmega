@@ -5,6 +5,7 @@ import nschank.engn.shape.Drawable;
 
 import java.awt.Graphics2D;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 
@@ -20,7 +21,7 @@ import java.util.Set;
  * @author nschank, Brown University
  * @version 1.3
  */
-public abstract class AbstractLayer implements Layer
+public abstract class AbstractLayer implements Layer, Iterable<Drawable>
 {
 	private Set<Drawable> elements;
 
@@ -52,10 +53,19 @@ public abstract class AbstractLayer implements Layer
 	 * 		A Graphics object to draw onto
 	 */
 	@Override
-	public final void draw(final Graphics2D g)
+	public void draw(final Graphics2D g)
 	{
 		for(Drawable o : this.elements)
 			o.draw(g);
+	}
+
+	/**
+	 * @return An Iterator of every element in this Layer.
+	 */
+	@Override
+	public Iterator<Drawable> iterator()
+	{
+		return this.elements.iterator();
 	}
 
 	/**
