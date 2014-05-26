@@ -4,13 +4,15 @@ import nschank.collect.dim.Dimensional;
 import nschank.collect.dim.Vector;
 import nschank.util.Interval;
 
-
 /**
  * Created by Nicolas Schank for package nschank.engn.gui.layer
  * Created on 25 May 2014
  * Last updated on 25 May 2014
  *
- *
+ * A Viewport is a Layer that takes up a specific area and cuts off any elements in the Layer which do not fit within
+ * that area. It has a centre point (in pixels) and a size (in pixels) that relate to the Screen and its x-y coordinate
+ * plane. It also has a center point (in game units) and a "zoom" (the number of pixels per game unit), which abstracts
+ * out the translation of game units to pixels visually.
  *
  * @author nschank, Brown University
  * @version 1.1
