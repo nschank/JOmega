@@ -24,7 +24,7 @@ public interface Drawable
 	/**
 	 * A Shape with no size, which does not draw, is black, and is located at the origin.
 	 */
-	public static final Drawable NOTHING = NoShape.NO_SHAPE;
+	public static final Drawable NOTHING = new NoShape();
 
 	/**
 	 * Draws this shape on the Graphics object. Should use the pixel position and size of the shape to figure out where
@@ -70,19 +70,17 @@ public interface Drawable
 	 */
 	public Color getColor();
 	/**
-	 *
-	 * @param c The new Color of this object
+	 * @param c
+	 * 		The new Color of this object
 	 */
 	public void setColor(Color c);
 
 	/**
-	 *
 	 * @return The interval this object intersects on the x-axis
 	 */
 	public Interval xInterval();
 
 	/**
-	 *
 	 * @return The interval this object intersects on the y-axis
 	 */
 	public Interval yInterval();

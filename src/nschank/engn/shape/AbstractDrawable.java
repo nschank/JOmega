@@ -13,6 +13,9 @@ import java.awt.Graphics2D;
  * Created on 9 Sep 2013 (originally OmegaShape)
  * Last updated 26 May 2014
  *
+ * Implements the Drawable interface in all aspects except drawing. Allows implementations of Drawable to worry about the
+ * use of width, height, intervals, color, and center point rather than actually doing the basic outline of those things.
+ *
  * @author nschank, Brown University
  * @version 6.0
  */

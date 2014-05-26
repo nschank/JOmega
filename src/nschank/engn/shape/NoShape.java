@@ -13,13 +13,16 @@ import java.awt.Graphics2D;
  * Created on 21 Sep 2013
  * Last updated on 26 May 2014
  *
+ * A Drawable object that cannot be changed and is always a sizeless, black point at the origin. Allows an object to have
+ * a shape and technically be drawable, but to never be drawn, even if something may attempt to make it visible.
+ *
+ * The empty implementation of nschank.engn.shape
+ *
  * @author nschank, Brown University
  * @version 2.1
  */
 final class NoShape implements Drawable
 {
-	static final Drawable NO_SHAPE = new NoShape();
-
 	/**
 	 * Draws this shape on the Graphics object. Should use the pixel position and size of the shape to figure out where
 	 * to draw.
@@ -128,7 +131,7 @@ final class NoShape implements Drawable
 	/**
 	 * Creates a NoShape. Used to define Drawable.NOTHING
 	 */
-	private NoShape()
+	NoShape()
 	{
 
 	}
