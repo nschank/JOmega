@@ -4,6 +4,7 @@ import nschank.collect.dim.Dimensional;
 import nschank.collect.dim.Vector;
 import nschank.util.Interval;
 
+
 /**
  * Created by Nicolas Schank for package nschank.engn.gui.layer
  * Created on 25 May 2014
@@ -73,6 +74,7 @@ public interface Viewport extends Layer
 	public Interval getYInterval();
 	/**
 	 * Must be an integer because pixels are integral.
+	 *
 	 * @return The current zoom value of this Viewport, in pixels per game unit
 	 */
 	public int getZoom();
@@ -84,12 +86,6 @@ public interface Viewport extends Layer
 	 * 		The new value of this Viewport
 	 */
 	public void setZoom(double zoom);
-	/**
-	 * Override to change the zooming factor, a double greater than 1 signifying how quickly this Viewport grows.
-	 *
-	 * @return How quickly the scale changes per zoomIn or zoomOut
-	 */
-	public double getZoomFactor();
 	/**
 	 * @param pixels
 	 * 		A pixel location onscreen, as a Dimensional (x,y)
