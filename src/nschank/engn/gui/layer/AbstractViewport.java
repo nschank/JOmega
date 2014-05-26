@@ -13,16 +13,19 @@ import java.awt.Shape;
 
 /**
  * Created by Nicolas Schank for package nschank.engn.gui.layer
- * Created on 12 Sep 2013.
- * Last updated on 25 May 2014.
+ * Created on 12 Sep 2013
+ * Last updated on 25 May 2014
  *
- * A Viewport is a Layer that takes up a specific area and cuts off any elements in the Layer which do not fit within
- * that area.
+ * AbstractViewport is a partial implementation of Viewport, which implements most basic parts of a Viewport, while allowing
+ * customization through the use of closestZoom(), furthestZoom(), and getZoomFactor(). The first two specify how close
+ * and far the Viewport should be able to zoom (in integral pixels per game unit), while the third specifies how quickly
+ * zooming should occur. All three are expected to remain generally constant, though allowing variable ones is theoretically
+ * fine.
  *
  * @author nschank, Brown University
- * @version 3.0
+ * @version 3.1
  */
-public abstract class AbstractViewport implements Viewport extends AbstractLayer
+public abstract class AbstractViewport extends AbstractLayer implements Viewport
 {
 	/**
 	 * The highest zoom scale (in pixels per game unit) to which the Viewport class defaults
@@ -62,12 +65,24 @@ public abstract class AbstractViewport implements Viewport extends AbstractLayer
 	protected AbstractViewport(Dimensional centerPos, Dimensional size, Dimensional viewPosition, double scale)
 	{
 		super();
+
+		if(centerPos.getDimensions() != 2)
+			throw new IllegalArgumentException("Center position must be a two-dimensional point.");
+		if(size.getDimensions() != 2) throw new IllegalArgumentException("Size must be a two-dimensional vector.");
+		if(viewPosition.getDimensions() != 2)
+			throw new IllegalArgumentException("View position must be a two-dimensional point.");
+		if(scale > this.closestZoom())
+			throw new IllegalArgumentException("Initial zoom must be further than the closest allowed zoom (" + this.closestZoom() + ").");
+		if(scale < this.furthestZoom())
+			throw new IllegalArgumentException("Initial zoom must be closer than the furthest allowed zoom (" + this.furthestZoom() + ").");
+
 		this.centerPos = new Vector(centerPos);
 		this.size = new Point(size);
 		this.viewPosition = new Vector(viewPosition);
 		this.scaleAmount = scale;
 
 		assert this.closestZoom() >= this.furthestZoom();
+		assert this.furthestZoom() >= 1;
 
 		this.setIntervals();
 	}
@@ -249,6 +264,7 @@ public abstract class AbstractViewport implements Viewport extends AbstractLayer
 	/**
 	 * @return The current zoom value of this Viewport, in pixels per game unit
 	 */
+	@Override
 	public int getZoom()
 	{
 		return (int) this.scaleAmount;
@@ -272,8 +288,7 @@ public abstract class AbstractViewport implements Viewport extends AbstractLayer
 	 *
 	 * @return How quickly the scale changes per zoomIn or zoomOut
 	 */
-	@Override
-	public double getZoomFactor()
+	protected double getZoomFactor()
 	{
 		return DEFAULT_SCALE_FACTOR;
 	}
