@@ -53,7 +53,7 @@ public abstract class AbstractDrawable implements Drawable
 	 * @param c
 	 * 		- the Color of this nschank.engn.shape
 	 */
-	protected AbstractDrawable(Dimensional location, float width, float height, Color c)
+	protected AbstractDrawable(Dimensional location, double width, double height, Color c)
 	{
 		if(location.getDimensions() != 2) throw new IllegalArgumentException("Location must be in two dimensions.");
 		this.position = new Point(location);
