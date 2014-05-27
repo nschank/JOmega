@@ -15,6 +15,8 @@ import nschank.engn.shape.Drawable;
  * Further, using the Collision subinterface, Collidables that are intersecting should be able to report how exactly to
  * correct that intersection using collision points and MTVs (Minimum Translation Vectors).
  *
+ * Main interface (along with the Collision subinterface) of the collide package.
+ *
  * @author Nicolas Schank
  * @version 4.0
  */
