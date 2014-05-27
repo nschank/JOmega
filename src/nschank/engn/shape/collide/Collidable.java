@@ -4,6 +4,7 @@ import com.google.common.base.Optional;
 import nschank.collect.dim.Dimensional;
 import nschank.collect.dim.Vector;
 import nschank.engn.shape.Drawable;
+import nschank.util.Interval;
 
 
 /**
@@ -33,7 +34,7 @@ public interface Collidable extends Drawable
 	 *
 	 * @return A Collision between this object and {@code other} if it exists, or Optional.absent() if it does not
 	 */
-	public Optional<Collision> collisionWith(Collidable other);
+	Optional<Collision> collisionWith(Collidable other);
 	/**
 	 * Determines how this object should collide with one of the four main Collidable types: an Axis-Aligned Box. Identical
 	 * to collisionWith, except with the knowledge that the colliding object is an AAB.
@@ -43,7 +44,7 @@ public interface Collidable extends Drawable
 	 *
 	 * @return A Collision, as would be returned in collisionWith
 	 */
-	public Optional<Collision> collisionWithAAB(AAB other);
+	Optional<Collision> collisionWithAAB(AAB other);
 	/**
 	 * Determines how this object should collide with one of the four main Collidable types: a Circle. Identical
 	 * to collisionWith, except with the knowledge that the colliding object is an Circle.
@@ -53,7 +54,7 @@ public interface Collidable extends Drawable
 	 *
 	 * @return A Collision, as would be returned in collisionWith
 	 */
-	public Optional<Collision> collisionWithCircle(Circle other);
+	Optional<Collision> collisionWithCircle(Circle other);
 	/**
 	 * Determines how this object should collide with one of the four main Collidable types: a Point. Identical
 	 * to collisionWith, except with the knowledge that the colliding object is an Point.
@@ -63,7 +64,7 @@ public interface Collidable extends Drawable
 	 *
 	 * @return A Collision, as would be returned in collisionWith
 	 */
-	public Optional<Collision> collisionWithPoint(Point other);
+	Optional<Collision> collisionWithPoint(Point other);
 	/**
 	 * Determines how this object should collide with one of the four main Collidable types: a Polygon. Identical
 	 * to collisionWith, except with the knowledge that the colliding object is an Polygon.
@@ -73,11 +74,11 @@ public interface Collidable extends Drawable
 	 *
 	 * @return A Collision, as would be returned in collisionWith
 	 */
-	public Optional<Collision> collisionWithPolygon(Polygon other);
+	Optional<Collision> collisionWithPolygon(Polygon other);
 	/**
 	 * @return A Collidable identical to this Collidable in position, size, rotation, and color.
 	 */
-	public Collidable copy();
+	Collidable copy();
 	/**
 	 * Ray tracing for this object. If this Ray collides with this object, returns the distance from the Ray's starting
 	 * point at which this object's edge occurs in the same plane. If the Ray and the object do not collide, returns
@@ -90,29 +91,37 @@ public interface Collidable extends Drawable
 	 *
 	 * @see nschank.engn.shape.collide.Ray
 	 */
-	public Optional<Double> distanceAlong(Ray r);
+	Optional<Double> distanceAlong(Ray r);
 	/**
 	 * @return The rotation, in radians, of this object.
 	 */
-	public double getRotation();
+	double getRotation();
 
 	/**
 	 * @param theta
 	 * 		The new rotation, in radians, of this object after calling this method
 	 */
-	public void setRotation(double theta);
+	void setRotation(double theta);
 	/**
 	 * Assumes a mass of 1. Multiply by a mass, if that mass is incorrect.
 	 *
 	 * @return The moment of inertia of this shape around the z-axis passing through the center of mass
 	 */
-	public double momentOfInertia();
+	double momentOfInertia();
+
+	/**
+	 *
+	 * @param axis
+	 *		An axis over which to project this object
+	 * @return The Interval over which this Dimensional occludes this axis
+	 */
+	Interval projectionOnto(Dimensional axis);
 
 	/**
 	 * @param theta
 	 * 		Rotates this object {@code theta} radians clockwise
 	 */
-	public void rotate(double theta);
+	void rotate(double theta);
 
 	/**
 	 * A Collision between one Collidable and another. A Collision refers to one Collidable over the other; the Collision
