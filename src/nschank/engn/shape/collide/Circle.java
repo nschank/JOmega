@@ -7,7 +7,6 @@ import cs195n.Vec2f;
 import nschank.collect.dim.Dimensional;
 import nschank.collect.dim.Dimensionals;
 import nschank.collect.dim.Vector;
-import nschank.collect.tuple.Pair;
 import nschank.engn.shape.AbstractDrawable;
 import nschank.engn.shape.fxn.PointProjector;
 import nschank.util.Interval;
@@ -24,7 +23,9 @@ import java.util.List;
  * Created on 28 Sep 2013
  * Last updated on 27 May 2014
  *
- *
+ * A Circle is one of the 4 main types of Collidables. It has a center point, a radius/diameter, and a color. It does
+ * rotate, though it may be hard (read: imposible) to see without overriding the draw method. Satisfies the invariant that
+ * the width and height are equal.
  *
  * @author nschank, Brown University
  * @version 4.1
@@ -34,17 +35,14 @@ public class Circle extends AbstractDrawable implements Collidable
 	private double rotation = 0.0f;
 
 	/**
+	 * Creates a circle at the given {@code location}, with a given {@code radius}, and of the given {@code color}.
 	 *
-	 */
-	private Circle()
-	{
-		super();
-	}
-
-	/**
 	 * @param location
+	 * 		The center location of the circle
 	 * @param radius
+	 * 		The radius of this circle (half the width and height)
 	 * @param c
+	 * 		The Color of this circle
 	 */
 	public Circle(Dimensional location, double radius, Color c)
 	{
@@ -52,11 +50,10 @@ public class Circle extends AbstractDrawable implements Collidable
 	}
 
 	/**
-	 *
 	 * @param other
 	 * 		Another object which may be colliding with this one.
 	 *
-	 * @return
+	 * @return A Collision from this circle to another object
 	 */
 	@Override
 	public Optional<Collision> collisionWith(Collidable other)
@@ -65,31 +62,35 @@ public class Circle extends AbstractDrawable implements Collidable
 	}
 
 	/**
-	 *
 	 * @param other
 	 * 		An AAB that may be colliding with this object
 	 *
-	 * @return
+	 * @return A Collision from this circle to an AAB
 	 */
 	@Override
 	public Optional<Collision> collisionWithAAB(AAB other)
 	{
-		double clampedX = Math.max(Math.min(this.getCenterPosition().getCoordinate(0), other.getCenterPosition().getCoordinate(0) + (other.getWidth() / 2)), other.getCenterPosition().getCoordinate(0) - (other.getWidth() / 2));
-		double clampedY = Math.max(Math.min(this.getCenterPosition().getCoordinate(1), other.getCenterPosition().getCoordinate(1) + (other.getHeight() / 2)), other.getCenterPosition().getCoordinate(1) - (other.getHeight() / 2));
-		if(new Vector(clampedX, clampedY).minus(this.getCenterPosition()).mag2() < (this.getRadius() * this.getRadius()))
+		double clampedX = Math.max(Math.min(this.getCenterPosition().getCoordinate(0),
+				other.getCenterPosition().getCoordinate(0) + (other.getWidth() / 2)),
+				other.getCenterPosition().getCoordinate(0) - (other.getWidth() / 2));
+		double clampedY = Math.max(Math.min(this.getCenterPosition().getCoordinate(1),
+				other.getCenterPosition().getCoordinate(1) + (other.getHeight() / 2)),
+				other.getCenterPosition().getCoordinate(1) - (other.getHeight() / 2));
+		if(Dimensionals.sqdistance(new Vector(clampedX, clampedY), this.getCenterPosition()) < (this.getRadius() * this
+				.getRadius()))
 		{
-			Collision collision = new DefaultCollision(new nschank.collect.dim.Point(clampedX, clampedY), this.mtvFromAAB(other));
+			Collision collision = new DefaultCollision(new nschank.collect.dim.Point(clampedX, clampedY),
+					this.mtvFromAAB(other));
 			return Optional.of(collision);
 		}
 		return Optional.absent();
 	}
 
 	/**
-	 *
 	 * @param other
 	 * 		An Circle that may be colliding with this object
 	 *
-	 * @return
+	 * @return A Collision with the given circle, if it exists
 	 */
 	@Override
 	public Optional<Collision> collisionWithCircle(Circle other)
@@ -99,7 +100,8 @@ public class Circle extends AbstractDrawable implements Collidable
 		{
 			double mag = apart.mag();
 			Vector napart = apart.normalized();
-			Collision collision = new DefaultCollision(napart.smult(this.getRadius()).plus(this.getCenterPosition()), napart.smult((mag - (other.getRadius() + this.getRadius()))));
+			Collision collision = new DefaultCollision(napart.smult(this.getRadius()).plus(this.getCenterPosition()),
+					napart.smult((mag - (other.getRadius() + this.getRadius()))));
 			//todo check if the above should be halved?
 			return Optional.of(collision);
 		}
@@ -107,11 +109,10 @@ public class Circle extends AbstractDrawable implements Collidable
 	}
 
 	/**
-	 *
 	 * @param other
 	 * 		An Point that may be colliding with this object
 	 *
-	 * @return
+	 * @return A Collision between this circle and another point.
 	 */
 	@Override
 	public Optional<Collision> collisionWithPoint(Point other)
@@ -120,7 +121,6 @@ public class Circle extends AbstractDrawable implements Collidable
 	}
 
 	/**
-	 *
 	 * @param other
 	 * 		An Polygon that may be colliding with this object
 	 *
@@ -129,13 +129,13 @@ public class Circle extends AbstractDrawable implements Collidable
 	@Override
 	public Optional<Collision> collisionWithPolygon(Polygon other)
 	{
-		return inverseOf(other.collisionWithCircle(this));
+		return Collidables.inverseOf(other.collisionWithCircle(this));
 	}
 
 	/**
 	 * @param other
-	 *
-	 * @return
+	 *		A point in the same plane as this circle
+	 * @return Whether or not this point is inside this {@code Circle}
 	 */
 	@Override
 	public boolean contains(Dimensional other)
@@ -144,7 +144,6 @@ public class Circle extends AbstractDrawable implements Collidable
 	}
 
 	/**
-	 *
 	 * @return
 	 */
 	@Override
@@ -154,7 +153,6 @@ public class Circle extends AbstractDrawable implements Collidable
 	}
 
 	/**
-	 *
 	 * @param r
 	 * 		A Ray in the same x-y coordinate plane as this object, which may be pointed to this object
 	 *
@@ -172,20 +170,20 @@ public class Circle extends AbstractDrawable implements Collidable
 		double x2 = Dimensionals.sqdistance(this.getCenterPosition(), projectionPoint);
 		double r2 = this.getRadius() * this.getRadius();
 
-		if(this.contains(r.getStartLocation()))
-			return Optional.of(projection + (float) Math.sqrt(r2 - x2));
+		if(this.contains(r.getStartLocation())) return Optional.of(projection + (float) Math.sqrt(r2 - x2));
 		else return Optional.of(projection - (float) Math.sqrt(r2 - x2));
 	}
 
 	/**
-	 *
 	 * @param g
 	 */
 	@Override
 	public void draw(Graphics2D g)
 	{
 		g.setColor(this.getColor());
-		g.fillOval((int) (this.getCenterPosition().getCoordinate(0) - this.getRadius()), (int) (this.getCenterPosition().getCoordinate(1) - this.getRadius()), (int) this.getWidth(), (int) this.getHeight());
+		g.fillOval((int) (this.getCenterPosition().getCoordinate(0) - this.getRadius()),
+				(int) (this.getCenterPosition().getCoordinate(1) - this.getRadius()), (int) this.getWidth(),
+				(int) this.getHeight());
 	}
 
 	/**
@@ -197,7 +195,6 @@ public class Circle extends AbstractDrawable implements Collidable
 	}
 
 	/**
-	 *
 	 * @return
 	 */
 	@Override
@@ -207,7 +204,6 @@ public class Circle extends AbstractDrawable implements Collidable
 	}
 
 	/**
-	 *
 	 * @param theta
 	 */
 	@Override
@@ -217,51 +213,6 @@ public class Circle extends AbstractDrawable implements Collidable
 	}
 
 	/**
-	 *
-	 * @param mtv
-	 * @param other
-	 * @return
-	 */
-	@Override
-	Optional<Collision> minimumCollisionFrom(Pair<Vec2f, Float> mtv, PCollidable other)
-	{
-		return inverseOf(other.minimumCollisionFromCircle(Pair.tuple(mtv.getA(), -1 * mtv.getB()), this));
-	}
-
-	/**
-	 * TODO
-	 * @param mtv
-	 * @param other
-	 * @return
-	 */
-	@Override
-	Optional<Collision> minimumCollisionFromCircle(Pair<Vec2f, Float> mtv, Circle other)
-	{
-		Vec2f apart = other.getCenterPosition().minus(this.getCenterPosition());
-		if(apart.mag2() < ((this.getRadius() + other.getRadius()) * (this.getRadius() + other.getRadius())))
-		{
-			float mag = apart.mag();
-			Vec2f napart = apart.sdiv(mag);
-			Collision collision = new DefaultCollision(this.getCenterPosition().plus(napart.smult(this.getRadius())), napart.smult((mag - (other.getRadius() + this.getRadius()))));
-			return Optional.of(collision);
-		}
-		return Optional.absent();
-	}
-
-	/**
-	 *
-	 * @param mtv
-	 * @param other
-	 * @return
-	 */
-	@Override
-	Optional<Collision> minimumCollisionFromPolygon(Pair<Vec2f, Float> mtv, Polygon other)
-	{
-		return inverseOf(other.minimumCollisionFromCircle(Pair.tuple(mtv.getA(), -1 * mtv.getB()), this));
-	}
-
-	/**
-	 *
 	 * @return
 	 */
 	@Override
@@ -279,8 +230,10 @@ public class Circle extends AbstractDrawable implements Collidable
 	{
 		if(other.contains(this.getCenterPosition())) //Circle is inside AAB
 		{
-			double xDiff = Math.abs(other.getCenterPosition().getCoordinate(0) - this.getCenterPosition().getCoordinate(0));
-			double yDiff = Math.abs(other.getCenterPosition().getCoordinate(1) - this.getCenterPosition().getCoordinate(1));
+			double xDiff = Math
+					.abs(other.getCenterPosition().getCoordinate(0) - this.getCenterPosition().getCoordinate(0));
+			double yDiff = Math
+					.abs(other.getCenterPosition().getCoordinate(1) - this.getCenterPosition().getCoordinate(1));
 
 			double needXDiff = this.getRadius() + (other.getWidth() / 2.0);
 			double needYDiff = this.getRadius() + (other.getHeight() / 2.0);
@@ -297,11 +250,13 @@ public class Circle extends AbstractDrawable implements Collidable
 		} else
 		{
 			double minXa = other.getCenterPosition().getCoordinate(0) + (other.getWidth() / 2d);
-			double minXb = Math.max(other.getCenterPosition().getCoordinate(0) - (other.getWidth() / 2d), this.getCenterPosition().getCoordinate(0));
+			double minXb = Math.max(other.getCenterPosition().getCoordinate(0) - (other.getWidth() / 2d),
+					this.getCenterPosition().getCoordinate(0));
 			double x = Math.min(minXa, minXb);
 
 			double minYa = other.getCenterPosition().getCoordinate(1) + (other.getHeight() / 2d);
-			double minYb = Math.max(other.getCenterPosition().getCoordinate(1) - (other.getHeight() / 2d), this.getCenterPosition().getCoordinate(1));
+			double minYb = Math.max(other.getCenterPosition().getCoordinate(1) - (other.getHeight() / 2d),
+					this.getCenterPosition().getCoordinate(1));
 			double y = Math.min(minYa, minYb);
 
 			return this.mtvFromCircle(new Point(x, y));
@@ -323,15 +278,17 @@ public class Circle extends AbstractDrawable implements Collidable
 
 	/**
 	 * TODO
+	 *
 	 * @param axis
-	 * @param projector
+	 *
 	 * @return
 	 */
 	@Override
-	Interval projectionOnto(Vec2f axis, Function<Vec2f, Float> projector)
+	public Interval projectionOnto(Dimensional axis)
 	{
 		Function<Vec2f, Vec2f> p2p = new PointProjector(Vec2f.ZEROES, axis);
-		List<Vec2f> pair = NLists.of(this.getCenterPosition().plus(axis.smult(this.getRadius())), this.getCenterPosition().minus(axis.smult(this.getRadius())));
+		List<Vec2f> pair = NLists.of(this.getCenterPosition().plus(axis.smult(this.getRadius())),
+				this.getCenterPosition().minus(axis.smult(this.getRadius())));
 		Vec2f min = NObjects.minimaOf(pair, Functions.compose(projector, p2p)).get().get(0);
 		Vec2f max;
 		if(min == pair.get(0)) max = pair.get(1);
@@ -361,7 +318,6 @@ public class Circle extends AbstractDrawable implements Collidable
 	}
 
 	/**
-	 *
 	 * @param width
 	 */
 	@Override
@@ -372,7 +328,6 @@ public class Circle extends AbstractDrawable implements Collidable
 	}
 
 	/**
-	 *
 	 * @return
 	 */
 	@Override
