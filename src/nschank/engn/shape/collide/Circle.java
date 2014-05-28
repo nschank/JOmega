@@ -1,21 +1,15 @@
 package nschank.engn.shape.collide;
 
-import com.google.common.base.Function;
-import com.google.common.base.Functions;
 import com.google.common.base.Optional;
-import cs195n.Vec2f;
 import nschank.collect.dim.Dimensional;
 import nschank.collect.dim.Dimensionals;
 import nschank.collect.dim.Vector;
 import nschank.engn.shape.AbstractDrawable;
-import nschank.engn.shape.fxn.PointProjector;
 import nschank.util.Interval;
 import nschank.util.NLists;
-import nschank.util.NObjects;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.util.List;
 
 
 /**
@@ -102,7 +96,6 @@ public class Circle extends AbstractDrawable implements Collidable
 			Vector napart = apart.normalized();
 			Collision collision = new DefaultCollision(napart.smult(this.getRadius()).plus(this.getCenterPosition()),
 					napart.smult((mag - (other.getRadius() + this.getRadius()))));
-			//todo check if the above should be halved?
 			return Optional.of(collision);
 		}
 		return Optional.absent();
@@ -144,7 +137,7 @@ public class Circle extends AbstractDrawable implements Collidable
 	}
 
 	/**
-	 * @return
+	 * @return A Circle identical to this one in location, size, and color
 	 */
 	@Override
 	public Collidable copy()
@@ -156,7 +149,7 @@ public class Circle extends AbstractDrawable implements Collidable
 	 * @param r
 	 * 		A Ray in the same x-y coordinate plane as this object, which may be pointed to this object
 	 *
-	 * @return
+	 * @return How far along the Ray one can find this Circle, if they intersect
 	 */
 	@Override
 	public Optional<Double> distanceAlong(Ray r)
@@ -170,12 +163,13 @@ public class Circle extends AbstractDrawable implements Collidable
 		double x2 = Dimensionals.sqdistance(this.getCenterPosition(), projectionPoint);
 		double r2 = this.getRadius() * this.getRadius();
 
-		if(this.contains(r.getStartLocation())) return Optional.of(projection + (float) Math.sqrt(r2 - x2));
-		else return Optional.of(projection - (float) Math.sqrt(r2 - x2));
+		if(this.contains(r.getStartLocation())) return Optional.of(projection + Math.sqrt(r2 - x2));
+		else return Optional.of(projection - Math.sqrt(r2 - x2));
 	}
 
 	/**
 	 * @param g
+	 * 		The Graphics object on which to draw this circle
 	 */
 	@Override
 	public void draw(Graphics2D g)
@@ -187,7 +181,7 @@ public class Circle extends AbstractDrawable implements Collidable
 	}
 
 	/**
-	 * @return
+	 * @return The radius of this circle
 	 */
 	public double getRadius()
 	{
@@ -195,7 +189,7 @@ public class Circle extends AbstractDrawable implements Collidable
 	}
 
 	/**
-	 * @return
+	 * @return The angle of this circle, in radians
 	 */
 	@Override
 	public double getRotation()
@@ -204,16 +198,19 @@ public class Circle extends AbstractDrawable implements Collidable
 	}
 
 	/**
+	 * Sets the angle of this circle from the x-axis
+	 *
 	 * @param theta
+	 * 		The angle of this circle, in radians
 	 */
 	@Override
 	public void setRotation(double theta)
 	{
-		this.rotation = theta;
+		this.rotation = theta % (2.0 * Math.PI);
 	}
 
 	/**
-	 * @return
+	 * @return The moment of inertia of this circle: (r^2)/2
 	 */
 	@Override
 	public double momentOfInertia()
@@ -223,8 +220,8 @@ public class Circle extends AbstractDrawable implements Collidable
 
 	/**
 	 * @param other
-	 *
-	 * @return
+	 *		An AAB that may be colliding with this object
+	 * @return A Vector that, if this Circle followed, would displace this Circle completely from outside this AAB
 	 */
 	private Vector mtvFromAAB(AAB other)
 	{
@@ -252,21 +249,22 @@ public class Circle extends AbstractDrawable implements Collidable
 			double minXa = other.getCenterPosition().getCoordinate(0) + (other.getWidth() / 2d);
 			double minXb = Math.max(other.getCenterPosition().getCoordinate(0) - (other.getWidth() / 2d),
 					this.getCenterPosition().getCoordinate(0));
-			double x = Math.min(minXa, minXb);
+			double clampedX = Math.min(minXa, minXb);
 
 			double minYa = other.getCenterPosition().getCoordinate(1) + (other.getHeight() / 2d);
 			double minYb = Math.max(other.getCenterPosition().getCoordinate(1) - (other.getHeight() / 2d),
 					this.getCenterPosition().getCoordinate(1));
-			double y = Math.min(minYa, minYb);
+			double clampedY = Math.min(minYa, minYb);
 
-			return this.mtvFromCircle(new Point(x, y));
+			return this.mtvFromCircle(new Point(clampedX, clampedY));
 		}
 	}
 
 	/**
 	 * @param other
-	 *
-	 * @return
+	 *		A Circle that may be colliding with this object
+	 * @return A Vector that, if this Circle were to follow, would displace it such that it would no longer be colliding
+	 * 		with {@code other}
 	 */
 	Vector mtvFromCircle(Circle other)
 	{
@@ -277,25 +275,21 @@ public class Circle extends AbstractDrawable implements Collidable
 	}
 
 	/**
-	 * TODO
-	 *
 	 * @param axis
-	 *
-	 * @return
+	 *		An axis onto which to project this circle
+	 * @return The Interval along this axis upon which this circle falls.
 	 */
 	@Override
 	public Interval projectionOnto(Dimensional axis)
 	{
-		Function<Vec2f, Vec2f> p2p = new PointProjector(Vec2f.ZEROES, axis);
-		List<Vec2f> pair = NLists.of(this.getCenterPosition().plus(axis.smult(this.getRadius())),
-				this.getCenterPosition().minus(axis.smult(this.getRadius())));
-		Vec2f min = NObjects.minimaOf(pair, Functions.compose(projector, p2p)).get().get(0);
-		Vec2f max;
-		if(min == pair.get(0)) max = pair.get(1);
-		else max = pair.get(0);
+		Vector center = new Vector(this.getCenterPosition());
 
-		Interval theirIt = Interval.of(projector.apply(p2p.apply(min)), projector.apply(p2p.apply(max)));
-		return theirIt;
+		Vector radius = new Vector(axis).normalized().smult(this.getRadius());
+
+		Vector plusRadius = center.plus(radius);
+		Vector minusRadius = center.minus(radius);
+
+		return Dimensionals.project(NLists.of(plusRadius, minusRadius), axis);
 	}
 
 	/**
