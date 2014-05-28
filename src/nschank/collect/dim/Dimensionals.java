@@ -12,7 +12,7 @@ import java.util.List;
  * A Utility class for dealing with Dimensional objects.
  *
  * @author nschank, Brown University
- * @version 2.4
+ * @version 2.5
  */
 public final class Dimensionals
 {
@@ -28,7 +28,7 @@ public final class Dimensionals
 	 */
 	public static double area(List<Dimensional> points)
 	{
-		float sum = 0;
+		double sum = 0;
 		for(int i = 0; i <= (points.size() - 1); i++)
 		{
 			Dimensional subI = points.get(i);
@@ -36,7 +36,7 @@ public final class Dimensionals
 			sum += subI.getCoordinate(0) * subIPlusOne.getCoordinate(1) - subIPlusOne.getCoordinate(0) * subI
 					.getCoordinate(1);
 		}
-		return sum / 2f;
+		return sum / 2d;
 	}
 
 	/**
@@ -127,5 +127,31 @@ public final class Dimensionals
 		for(int i = fewerDimensions.getDimensions(); i < moreDimensions.getDimensions(); i++)
 			dist += Math.pow(moreDimensions.getCoordinate(i), 2);
 		return dist;
+	}
+
+	/**
+	 * @param points
+	 * 		A List of Dimensionals in clockwise order
+	 *
+	 * @return The weighted center of those points, as another Dimensional
+	 */
+	public static Dimensional weightedCenter(List<Dimensional> points)
+	{
+		double Cx = 0;
+		double Cy = 0;
+		double sum = 0;
+		for(int i = 0; i <= (points.size() - 1); i++)
+		{
+			Dimensional subI = points.get(i);
+			Dimensional subIPlusOne = points.get((i + 1) % (points.size()));
+			double areaOfThisTerm = (subI.getCoordinate(0) * subIPlusOne.getCoordinate(1)) - (
+					subIPlusOne.getCoordinate(0) * subI.getCoordinate(1));
+			Cx += (subI.getCoordinate(0) + subIPlusOne.getCoordinate(0)) * (areaOfThisTerm);
+			Cy += (subI.getCoordinate(1) + subIPlusOne.getCoordinate(1)) * (areaOfThisTerm);
+			sum += subI.getCoordinate(0) * subIPlusOne.getCoordinate(1) - subIPlusOne.getCoordinate(0) * subI
+					.getCoordinate(1);
+		}
+		double area = sum / 2d;
+		return new Vector(Cx, Cy).sdiv(6 * area);
 	}
 }
