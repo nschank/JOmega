@@ -8,6 +8,7 @@ import nschank.collect.dim.Dimensional;
 import nschank.collect.dim.Dimensionals;
 import nschank.collect.dim.Vector;
 import nschank.collect.tuple.Pair;
+import nschank.engn.shape.AbstractDrawable;
 import nschank.engn.shape.fxn.PointProjector;
 import nschank.engn.shape.fxn.PointToFloat;
 import nschank.util.Interval;
@@ -28,7 +29,7 @@ import java.util.*;
  * @author nschank, Brown University
  * @version 2.11
  */
-public class Polygon extends PCollidable
+public class Polygon extends AbstractDrawable implements Collidable
 {
 	private double angle = 0.0f;
 	private double momentOfInertia;

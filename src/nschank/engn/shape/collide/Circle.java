@@ -8,6 +8,7 @@ import nschank.collect.dim.Dimensional;
 import nschank.collect.dim.Dimensionals;
 import nschank.collect.dim.Vector;
 import nschank.collect.tuple.Pair;
+import nschank.engn.shape.AbstractDrawable;
 import nschank.engn.shape.fxn.PointProjector;
 import nschank.util.Interval;
 import nschank.util.NLists;
@@ -26,9 +27,9 @@ import java.util.List;
  *
  *
  * @author nschank, Brown University
- * @version 3.5
+ * @version 4.1
  */
-public class Circle extends PCollidable
+public class Circle extends AbstractDrawable implements Collidable
 {
 	private double rotation = 0.0f;
 
@@ -60,7 +61,7 @@ public class Circle extends PCollidable
 	@Override
 	public Optional<Collision> collisionWith(Collidable other)
 	{
-		return inverseOf(other.collisionWithCircle(this));
+		return Collidables.inverseOf(other.collisionWithCircle(this));
 	}
 
 	/**
@@ -139,7 +140,7 @@ public class Circle extends PCollidable
 	@Override
 	public boolean contains(Dimensional other)
 	{
-		return Dimensionals.sqdistance(other, this.getCenterPosition()) < (this.getRadius() * this.getRadius());
+		return Dimensionals.sqdistance(other, this.getCenterPosition()) <= (this.getRadius() * this.getRadius());
 	}
 
 	/**
@@ -213,7 +214,6 @@ public class Circle extends PCollidable
 	public void setRotation(double theta)
 	{
 		this.rotation = theta;
-		this.positionDot();
 	}
 
 	/**
