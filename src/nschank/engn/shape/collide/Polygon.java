@@ -4,6 +4,9 @@ import com.google.common.base.Function;
 import com.google.common.base.Functions;
 import com.google.common.base.Optional;
 import cs195n.Vec2f;
+import nschank.collect.dim.Dimensional;
+import nschank.collect.dim.Dimensionals;
+import nschank.collect.dim.Vector;
 import nschank.collect.tuple.Pair;
 import nschank.engn.shape.fxn.PointProjector;
 import nschank.engn.shape.fxn.PointToFloat;
@@ -29,17 +32,17 @@ import java.util.*;
  */
 public class Polygon extends PCollidable
 {
-	protected List<Vec2f> points;
-	private float angle = 0.0f;
-	private float momentOfInertia;
+	private double angle = 0.0f;
+	private double momentOfInertia;
+	protected List<Dimensional> points;
 	private Interval xInterval;
 	private Interval yInterval;
 
-	public Polygon(Vec2f location, float width, float height, Color c, Vec2f relativeStart, Vec2f relativeSecond, Vec2f... relativeOthers)
+	public Polygon(Dimensional location, double width, double height, Color c, Dimensional relativeStart, Dimensional relativeSecond, Dimensional... relativeOthers)
 	{
 		super(location, width, height, c);
 
-		List<Vec2f> points = new ArrayList<>();
+		List<Dimensional> points = new ArrayList<>();
 		points.add(relativeStart);
 		points.add(relativeSecond);
 		Collections.addAll(points, relativeOthers);
@@ -48,101 +51,114 @@ public class Polygon extends PCollidable
 		this.setCenterPosition(location);
 	}
 
-	public Polygon(Color c, Vec2f... others)
+	public Polygon(Color c, Dimensional... others)
 	{
-		super(Vec2f.ZEROES, 0, 0, c);
-		List<Vec2f> points = new ArrayList<>();
+		super(nschank.collect.dim.Point.ZERO_2D, 0, 0, c);
+		List<Dimensional> points = new ArrayList<>();
 		Collections.addAll(points, others);
-		float area6 = this.area(points) * 6f;
-		Vec2f offFromCenter = this.unweightedCenter(points).sdiv(area6);
+		double area6 = this.area(points) * 6f;
+		Dimensional offFromCenter = this.unweightedCenter(points).sdiv(area6);
 
-		Interval actualWidth = Interval.from(points, new Function<Vec2f, Float>()
+		Interval actualWidth = Interval.from(points, new Function<Dimensional, Double>()
 		{
 			@Override
-			public Float apply(Vec2f o)
+			public Double apply(Dimensional o)
 			{
-				return Float.valueOf(o.x);
+				return Double.valueOf(o.getCoordinate(0));
 			}
 		});
 
-		Interval actualHeight = Interval.from(points, new Function<Vec2f, Float>()
+		Interval actualHeight = Interval.from(points, new Function<Dimensional, Double>()
 		{
 			@Override
-			public Float apply(Vec2f o)
+			public Double apply(Dimensional o)
 			{
-				return Float.valueOf(o.y);
+				return Double.valueOf(o.getCoordinate(1));
 			}
 		});
 		super.setCenterPosition(offFromCenter);
 		super.setWidth(actualWidth.width());
 		super.setHeight(actualHeight.width());
 
-
 		this.initPolygon(points);
 	}
 
-	public Optional<Vec2f> isConcave()
-	{
-		for(Vec2f point : this.getPoints())
-		{
-			List<Vec2f> allElse = new ArrayList<>(this.getPoints());
-			allElse.remove(point);
-			if(new Polygon(Color.BLACK, allElse.toArray(new Vec2f[allElse.size()])).contains(point))
-				return Optional.of(point);
-		}
-		return Optional.absent();
-	}
-
-	private float area(List<Vec2f> points)
+	/**
+	 * @param points
+	 *
+	 * @return
+	 */
+	private double area(List<Dimensional> points)
 	{
 		float sum = 0;
 		for(int i = 0; i <= (points.size() - 1); i++)
 		{
-			Vec2f subI = points.get(i);
-			Vec2f subIPlusOne = points.get((i + 1) % (points.size()));
-			sum += subI.x * subIPlusOne.y - subIPlusOne.x * subI.y;
+			Dimensional subI = points.get(i);
+			Dimensional subIPlusOne = points.get((i + 1) % (points.size()));
+			sum += subI.getCoordinate(0) * subIPlusOne.getCoordinate(1) - subIPlusOne.getCoordinate(0) * subI.getCoordinate(1);
 		}
 		return sum / 2f;
 	}
 
-	List<Vec2f> axes()
+	/**
+	 * @return
+	 */
+	List<Dimensional> axes()
 	{
-		List<Vec2f> myAxes = new ArrayList<>();
-		for(int i = -1; i < (this.getPoints().size() - 1); i++)
+		List<Dimensional> myAxes = new ArrayList<>();
+		for(int i = -1; i < (this.points.size() - 1); i++)
 		{
-			Vec2f startPoint = this.getPoints().get((this.getPoints().size() + i) % this.getPoints().size());
-			Vec2f secondaryPoint = this.getPoints().get((this.getPoints().size() + i + 1) % this.getPoints().size());
-			Vec2f line = startPoint.minus(secondaryPoint);
-			line = new Vec2f(line.y, -line.x).normalized();
-			if(line.x < 0) line = line.smult(-1);
+			Dimensional startPoint = this.points.get((this.points.size() + i) % this.points.size());
+			Dimensional secondaryPoint = this.points.get((this.points.size() + i + 1) % this.points.size());
+			Vector line = new Vector(startPoint).minus(secondaryPoint);
+			line = new Vector(line.getCoordinate(1), -line.getCoordinate(0)).normalized();
+			if(line.getCoordinate(1) < 0) line = line.smult(-1);
 			myAxes.add(line);
 		}
 
 		return myAxes;
 	}
 
-	Optional<Collision> collisionAlongAxes(List<Vec2f> shapeAxes1, List<Vec2f> shapeAxes2, PCollidable other)
+	/**
+	 * TODO
+	 *
+	 * @param shapeAxes1
+	 * @param shapeAxes2
+	 * @param other
+	 *
+	 * @return
+	 */
+	Optional<Collision> collisionAlongAxes(Iterable<? extends Dimensional> shapeAxes1, Iterable<? extends Dimensional> shapeAxes2, PCollidable other)
 	{
-		Optional<Pair<Vec2f, Float>> shape = this.collisionAlongShapeAxes(shapeAxes1, shapeAxes2, other);
+		Optional<Pair<Dimensional, Double>> shape = this.collisionAlongShapeAxes(shapeAxes1, shapeAxes2, other);
 		if(shape.isPresent()) return this.minimumCollisionFrom(shape.get(), other);
 		return Optional.absent();
 	}
 
-	Optional<Pair<Vec2f, Float>> collisionAlongShapeAxes(List<Vec2f> shapeAxes1, List<Vec2f> shapeAxes2, PCollidable other)
+	/**
+	 * TODO
+	 *
+	 * @param shapeAxes1
+	 * @param shapeAxes2
+	 * @param other
+	 *
+	 * @return
+	 */
+	Optional<Pair<Dimensional, Double>> collisionAlongShapeAxes(Iterable<? extends Dimensional> shapeAxes1, Iterable<? extends Dimensional> shapeAxes2, PCollidable other)
 	{
-		Optional<Vec2f> minimumAxis = Optional.absent();
-		Optional<Float> minimumAxisExchange = Optional.absent();
+		Optional<Dimensional> minimumAxis = Optional.absent();
+		Optional<Double> minimumAxisExchange = Optional.absent();
 
-		for(Vec2f axis : shapeAxes1)
+		for(Dimensional axis : shapeAxes1)
 		{
-			PointToFloat use = new PointToFloat(Vec2f.ZEROES, axis);
+			PointToFloat use = new PointToFloat(nschank.collect.dim.Point.ZERO_2D, axis);
 
 			Interval projection = this.projectionOnto(axis, use);
 			Interval otherProjection = other.projectionOnto(axis, use);
 
 			if(!projection.isIntersecting(otherProjection)) return Optional.absent();
 
-			float minimumExchange = projection.getMinimumTranslation(otherProjection);
+			double minimumExchange = projection.getMinimumTranslation(otherProjection);
 
 			if(!minimumAxisExchange.isPresent() || (Math.abs(minimumAxisExchange.get()) > Math.abs(minimumExchange)))
 			{
@@ -151,16 +167,16 @@ public class Polygon extends PCollidable
 			}
 		}
 
-		for(Vec2f axis : shapeAxes2)
+		for(Dimensional axis : shapeAxes2)
 		{
-			PointToFloat use = new PointToFloat(Vec2f.ZEROES, axis);
+			PointToFloat use = new PointToFloat(nschank.collect.dim.Point.ZERO_2D, axis);
 
 			Interval projection = this.projectionOnto(axis, use);
 			Interval otherProjection = other.projectionOnto(axis, use);
 
 			if(!projection.isIntersecting(otherProjection)) return Optional.absent();
 
-			float minimumExchange = projection.getMinimumTranslation(otherProjection);
+			double minimumExchange = projection.getMinimumTranslation(otherProjection);
 
 			if(!minimumAxisExchange.isPresent() || (Math.abs(minimumAxisExchange.get()) > Math.abs(minimumExchange)))
 			{
@@ -172,57 +188,72 @@ public class Polygon extends PCollidable
 		return Optional.of(Pair.tuple(minimumAxis.get(), minimumAxisExchange.get()));
 	}
 
+	/**
+	 *
+	 * @param other
+	 * 		Another object which may be colliding with this one.
+	 *
+	 * @return
+	 */
 	@Override
 	public Optional<Collision> collisionWith(Collidable other)
 	{
 		return inverseOf(other.collisionWithPolygon(this));
 	}
 
-	@Override
-	public Optional<Float> distanceAlong(Ray r)
-	{
-		float shortestCollision = -1;
-		for(int i = -1; i < (this.getPoints().size() - 1); i++)
-		{
-			Vec2f start = this.getPoints().get((this.getPoints().size() + i) % this.getPoints().size());
-			Vec2f end = this.getPoints().get((this.getPoints().size() + i + 1) % this.getPoints().size());
-			Vec2f perp = new Vec2f(start.minus(end).y, end.minus(start).x);
-			if((((start.minus(r.getStartLocation())).cross(r.getDirection()) * (end.minus(r.getStartLocation()).cross(r.getDirection()))) > 0) || (r.getDirection().dot(perp) == 0))
-				continue;
-			float collision = end.minus(r.getStartLocation()).dot(perp) / r.getDirection().dot(perp);
-			if((collision > 0) && ((shortestCollision < 0) || (shortestCollision > collision)))
-				shortestCollision = collision;
-		}
-
-		if(shortestCollision < 0) return Optional.absent();
-		else return Optional.of(shortestCollision);
-	}
-
+	/**
+	 *
+	 * @param other
+	 * 		An AAB that may be colliding with this object
+	 *
+	 * @return
+	 */
 	@Override
 	public Optional<Collision> collisionWithAAB(AAB other)
 	{
 		return this.collisionAlongAxes(this.axes(), other.axes(), other);
 	}
 
+	/**
+	 *
+	 * @param other
+	 * 		An Circle that may be colliding with this object
+	 *
+	 * @return
+	 */
 	@Override
 	public Optional<Collision> collisionWithCircle(Circle other)
 	{
-		Vec2f closest = NVec2fs.closestTo(other.getCenterPosition(), this.getPoints());
-		Vec2f line = other.getCenterPosition().minus(closest).normalized();
-		if(line.x < 0) line = line.smult(-1);
+		Dimensional closest = Dimensionals.closestTo(other.getCenterPosition(), this.points);
+		Vector line = new Vector(other.getCenterPosition()).minus(closest).normalized();
+		if(line.getCoordinate(0) < 0) line = line.smult(-1);
 
 		return this.collisionAlongAxes(this.axes(), NLists.of(line), other);
 	}
 
+	/**
+	 *
+	 * @param other
+	 * 		An Point that may be colliding with this object
+	 *
+	 * @return
+	 */
 	@Override
 	public Optional<Collision> collisionWithPoint(Point other)
 	{
-		Vec2f closest = NVec2fs.closestTo(other.getCenterPosition(), this.getPoints());
-		Vec2f line = other.getCenterPosition().minus(closest).normalized();
-		if(line.x < 0) line = line.smult(-1);
+		Dimensional closest = Dimensionals.closestTo(other.getCenterPosition(), this.points);
+		Vector line = new Vector(other.getCenterPosition()).minus(closest).normalized();
+		if(line.getCoordinate(0) < 0) line = line.smult(-1);
 		return this.collisionAlongAxes(this.axes(), NLists.of(line), other);
 	}
 
+	/**
+	 *
+	 * @param other
+	 * 		An Polygon that may be colliding with this object
+	 *
+	 * @return
+	 */
 	@Override
 	public Optional<Collision> collisionWithPolygon(Polygon other)
 	{
@@ -231,104 +262,209 @@ public class Polygon extends PCollidable
 		return this.collisionAlongAxes(this.axes(), other.axes(), other);
 	}
 
-	boolean contains(Vec2f other)
+	/**
+	 *
+	 * @param other
+	 * @return
+	 */
+	@Override
+	public boolean contains(Dimensional other)
 	{
-		for(int i = -1; i < (this.getPoints().size() - 1); i++)
+		Vector vother = new Vector(other);
+		for(int i = -1; i < (this.points.size() - 1); i++)
 		{
-			Vec2f startPoint = points.get((points.size() + i) % points.size());
+			Dimensional startPoint = this.points.get((this.points.size() + i) % this.points.size());
 			if(startPoint.equals(other)) return true;
-			Vec2f secondaryPoint = points.get((points.size() + i + 1) % points.size());
-			Vec2f edge = secondaryPoint.minus(startPoint);
-			Vec2f toOther = other.minus(startPoint);//.sdiv(edge.mag());
+
+			Dimensional secondaryPoint = this.points.get((this.points.size() + i + 1) % this.points.size());
+			Vector edge = new Vector(secondaryPoint).minus(startPoint);
+			Vector toOther = vother.minus(startPoint);//.sdiv(edge.mag());
 			//edge = edge.normalized();
-			if(edge.cross(toOther) < 0)
-			{
-				return false;
-			}
+			if(edge.crossProduct(toOther).getCoordinate(2) < 0) return false;
 		}
 		return true;
 	}
 
+	/**
+	 * @return
+	 */
+	@Override
+	public Collidable copy()
+	{
+		List<Dimensional> toUse = new ArrayList<>();
+		for(Dimensional v : this.points)
+			toUse.add(new nschank.collect.dim.Point(v.getCoordinate(0), v.getCoordinate(1)));
+		return new Polygon(this.getColor(), toUse.toArray(new Dimensional[toUse.size()]));
+	}
+
+	/**
+	 * @param r
+	 * 		A Ray in the same x-y coordinate plane as this object, which may be pointed to this object
+	 *
+	 * @return
+	 */
+	@Override
+	public Optional<Double> distanceAlong(Ray r)
+	{
+		double shortestCollision = -1;
+		for(int i = -1; i < (this.points.size() - 1); i++)
+		{
+			Vector start = new Vector(this.points.get((this.points.size() + i) % this.points.size()));
+			Vector end = new Vector(this.points.get((this.points.size() + i + 1) % this.points.size()));
+
+			Vector perp = new Vector(start.minus(end).getCoordinate(1), end.minus(start).getCoordinate(0));
+			if((((start.minus(r.getStartLocation())).crossProduct(r.getDirection()).getCoordinate(2) * (end.minus(r.getStartLocation()).crossProduct(r.getDirection()).getCoordinate(2))) > 0) || (r.getDirection().dotProduct(perp) == 0))
+				continue;
+			double collision = end.minus(r.getStartLocation()).dotProduct(perp) / r.getDirection().dotProduct(perp);
+			if((collision > 0) && ((shortestCollision < 0) || (shortestCollision > collision)))
+				shortestCollision = collision;
+		}
+
+		if(shortestCollision < 0) return Optional.absent();
+		else return Optional.of(shortestCollision);
+	}
+
+	/**
+	 *
+	 * @param g
+	 */
 	@Override
 	public void draw(Graphics2D g)
 	{
 		g.setColor(this.getColor());
-		Path2D path = new Path2D.Float();
-		path.moveTo(this.getPoints().get(this.getPoints().size() - 1).x, this.getPoints().get(this.getPoints().size() - 1).y);
-		for(Vec2f v : this.getPoints())
-			path.lineTo(v.x, v.y);
+		Path2D path = new Path2D.Double();
+		path.moveTo(this.points.get(this.points.size() - 1).getCoordinate(0), this.points.get(this.points.size() - 1).getCoordinate(1));
+		for(Dimensional v : this.points)
+			path.lineTo(v.getCoordinate(0), v.getCoordinate(1));
 		g.fill(path);
 	}
 
-	public List<Vec2f> getPoints()
+	/**
+	 * @return
+	 */
+	public Iterable<Dimensional> getPoints()
 	{
-		return Collections.unmodifiableList(points);
+		return Collections.unmodifiableList(this.points);
 	}
 
+	/**
+	 * @return
+	 */
 	@Override
-	public float getRotation()
+	public double getRotation()
 	{
 		return this.angle;
 	}
 
-	private void initPolygon(List<Vec2f> points)
+	/**
+	 * @param f
+	 */
+	@Override
+	public void setRotation(double f)
 	{
-		float area6 = this.area(points) * 6f;
-		Vec2f offFromCenter = this.unweightedCenter(points).sdiv(area6);
+		Interval newX = Interval.about(this.getCenterPosition().getCoordinate(0), 0.0f);
+		Interval newY = Interval.about(this.getCenterPosition().getCoordinate(0), 0.0f);
+		Vector centre = new Vector(this.getCenterPosition());
+		for(int i = 0; i < this.points.size(); i++)
+		{
+			Vector rel = centre.minus(this.points.get(i)).smult(-1);
+			this.points.set(i, new Vector(this.getCenterPosition()).plus(Vector.fromPolar(rel.mag(), rel.angle() + (f - this.angle))));
+			newX = newX.and(Interval.about(this.points.get(i).getCoordinate(0), 0.0f));
+			newY = newY.and(Interval.about(this.points.get(i).getCoordinate(0), 0.0f));
+		}
+		this.angle = f;
+		this.xInterval = newX;
+		this.yInterval = newY;
+	}
 
-		Interval actualWidth = Interval.from(points, new Function<Vec2f, Float>()
+	/**
+	 * @param points
+	 */
+	private void initPolygon(List<Dimensional> points)
+	{
+		double area6 = this.area(points) * 6d;
+		Dimensional offFromCenter = this.unweightedCenter(points).sdiv(area6);
+
+		Interval actualWidth = Interval.from(points, new Function<Dimensional, Double>()
 		{
 			@Override
-			public Float apply(Vec2f o)
+			public Double apply(Dimensional o)
 			{
-				return Float.valueOf(o.x);
+				return Double.valueOf(o.getCoordinate(0));
 			}
 		});
 
-		Interval actualHeight = Interval.from(points, new Function<Vec2f, Float>()
+		Interval actualHeight = Interval.from(points, new Function<Dimensional, Double>()
 		{
 			@Override
-			public Float apply(Vec2f o)
+			public Double apply(Dimensional o)
 			{
-				return Float.valueOf(o.y);
+				return Double.valueOf(o.getCoordinate(1));
 			}
 		});
 
-		List<Vec2f> addToCenters = new ArrayList<>();
-		float adjustedWidth = (float) ((this.getWidth()) / (actualWidth.getMax() - actualWidth.getMin()));
-		float adjustedHeight = (float) ((this.getHeight()) / (actualHeight.getMax() - actualHeight.getMin()));
-		for(Vec2f v : points)
-			addToCenters.add(new Vec2f((v.minus(offFromCenter).x * adjustedWidth), (v.minus(offFromCenter).y * adjustedHeight)));
+		List<Vector> addToCenters = new ArrayList<>();
+		double adjustedWidth = ((this.getWidth()) / (actualWidth.getMax() - actualWidth.getMin()));
+		double adjustedHeight = ((this.getHeight()) / (actualHeight.getMax() - actualHeight.getMin()));
+		for(Dimensional v : points)
+			addToCenters.add(new Vector((new Vector(v).minus(offFromCenter).getCoordinate(0) * adjustedWidth), (new Vector(v).minus(offFromCenter).getCoordinate(1) * adjustedHeight)));
 
-		float numeratorSum = 0.0f;
-		float denominatorSum = 0.0f;
+		double numeratorSum = 0.0;
+		double denominatorSum = 0.0;
 		for(int i = 0; i < addToCenters.size(); i++)
 		{
-			Vec2f currentI = addToCenters.get(i);
-			Vec2f nextI = addToCenters.get((i + 1) % (addToCenters.size()));
-			float cross = nextI.cross(currentI);
-			float doubleNextDot = nextI.dot(nextI);
-			float crossDot = nextI.dot(currentI);
-			float doubleCurrentDot = currentI.dot(currentI);
+			Vector currentI = addToCenters.get(i);
+			Vector nextI = addToCenters.get((i + 1) % (addToCenters.size()));
+			double cross = nextI.crossProduct(currentI).getCoordinate(2);
+			double doubleNextDot = nextI.dotProduct(nextI);
+			double crossDot = nextI.dotProduct(currentI);
+			double doubleCurrentDot = currentI.dotProduct(currentI);
 
 			numeratorSum += cross * (doubleNextDot + crossDot + doubleCurrentDot);
 			denominatorSum += cross;
 
-			points.set(i, this.getCenterPosition().plus(currentI));
+			points.set(i, currentI.plus(this.getCenterPosition()));
 		}
 
 		this.points = points;
-		this.xInterval = Interval.from(points, NVec2fs.getX());
-		this.yInterval = Interval.from(points, NVec2fs.getY());
+		this.xInterval = Interval.from(Dimensionals.getCoordinate(points, 0));
+		this.yInterval = Interval.from(Dimensionals.getCoordinate(points, 1));
 		this.momentOfInertia = numeratorSum / (denominatorSum * 6.0f);
 	}
 
+	/**
+	 * @return
+	 */
+	public Optional<Dimensional> isConcave()
+	{
+		for(Dimensional point : this.getPoints())
+		{
+			List<Dimensional> allElse = new ArrayList<>(this.points);
+			allElse.remove(point);
+			if(new Polygon(Color.BLACK, allElse.toArray(new Dimensional[allElse.size()])).contains(point))
+				return Optional.of(point);
+		}
+		return Optional.absent();
+	}
+
+	/**
+	 * todo
+	 * @param mtv
+	 * @param other
+	 * @return
+	 */
 	@Override
 	Optional<Collision> minimumCollisionFrom(Pair<Vec2f, Float> mtv, PCollidable other)
 	{
 		return inverseOf(other.minimumCollisionFromPolygon(Pair.tuple(mtv.getA(), -1 * mtv.getB()), this));
 	}
 
+	/**
+	 * todo
+	 * @param mtv
+	 * @param other
+	 * @return
+	 */
 	@Override
 	Optional<Collision> minimumCollisionFromCircle(Pair<Vec2f, Float> mtv, Circle other)
 	{
@@ -337,6 +473,12 @@ public class Polygon extends PCollidable
 		return Optional.of(c);
 	}
 
+	/**
+	 * todo
+	 * @param mtv
+	 * @param other
+	 * @return
+	 */
 	@Override
 	Optional<Collision> minimumCollisionFromPolygon(Pair<Vec2f, Float> mtv, Polygon other)
 	{
@@ -353,127 +495,138 @@ public class Polygon extends PCollidable
 		return Optional.of(c);
 	}
 
+	/**
+	 *
+	 * @return
+	 */
 	@Override
-	public float momentOfInertia()
+	public double momentOfInertia()
 	{
 		return this.momentOfInertia;
 	}
 
+	/**
+	 *
+	 * @param axis
+	 * @param projector
+	 * @return
+	 */
 	@Override
-	Interval projectionOnto(Vec2f axis, Function<Vec2f, Float> projector)
+	Interval projectionOnto(Dimensional axis, Function<Dimensional, Double> projector)
 	{
-		Function<Vec2f, Vec2f> p2p = new PointProjector(Vec2f.ZEROES, axis);
+		Function<Dimensional, Dimensional> p2p = new PointProjector(Vector.ZERO_2D, axis);
 		return Interval.from(this.getPoints(), Functions.compose(projector, p2p));
 	}
 
+	/**
+	 * @param f
+	 */
 	@Override
-	public void rotate(float f)
+	public void rotate(double f)
 	{
-		this.setRotation((float) ((this.getRotation() + f) % (Math.PI * 2f)));
+		this.setRotation(((this.getRotation() + f) % (Math.PI * 2f)));
 	}
 
+	/**
+	 *
+	 * @param newPosition
+	 */
 	@Override
-	public Collidable copy()
+	public void setCenterPosition(Dimensional newPosition)
 	{
-		List<Vec2f> toUse = new ArrayList<>();
-		for(Vec2f v : this.points)
-			toUse.add(new Vec2f(v.x, v.y));
-		return new Polygon(this.getColor(), toUse.toArray(new Vec2f[toUse.size()]));
-	}
-
-	@Override
-	public void setCenterPosition(Vec2f newPosition)
-	{
-		Interval newX = Interval.about(newPosition.x, 0.0f);
-		Interval newY = Interval.about(newPosition.y, 0.0f);
+		Vector newVector = new Vector(newPosition);
 		for(int i = 0; i < this.points.size(); i++)
-		{
-			this.points.set(i, this.points.get(i).minus(this.getCenterPosition().minus(newPosition)));
-			newX = newX.and(Interval.about(this.points.get(i).x, 0.0f));
-			newY = newY.and(Interval.about(this.points.get(i).y, 0.0f));
-		}
+			this.points.set(i, newVector.plus(this.points.get(i)).minus(this.getCenterPosition()));
+
+		this.xInterval = this.xInterval.plus(-newVector.minus(this.getCenterPosition()).getCoordinate(0));
+		this.yInterval = this.yInterval.plus(-newVector.minus(this.getCenterPosition()).getCoordinate(1));
 		super.setCenterPosition(newPosition);
-		this.xInterval = newX;
-		this.yInterval = newY;
 	}
 
+	/**
+	 *
+	 * @param f
+	 */
 	@Override
-	public void setHeight(float f)
+	public void setHeight(double f)
 	{
 		if(f == this.getHeight()) return;
 
-		Vec2f projectionAtHeight = Vec2f.fromPolar(this.getRotation() + ((float) Math.PI / 2f), ((f / this.getHeight()) - 1));
-		for(int i = 0; i < this.getPoints().size(); i++)
-			this.points.set(i, this.getPoints().get(i).plus(this.getPoints().get(i).minus(this.getCenterPosition()).projectOntoLine(Vec2f.ZEROES, projectionAtHeight).smult((f / this.getHeight()) - 1)));
-		this.xInterval = Interval.from(this.points, NVec2fs.getX());
-		this.yInterval = Interval.from(this.points, NVec2fs.getY());
+		Vector projectionAtHeight = Vector.fromPolar(((f / this.getHeight()) - 1), this.getRotation() + ((float) Math.PI / 2f));
+		for(int i = 0; i < this.points.size(); i++)
+			this.points.set(i, new Vector(this.points.get(i)).smult(2).minus(this.getCenterPosition()).projectOntoLine(Vector.ZERO_2D, projectionAtHeight).smult((f / this.getHeight()) - 1));
+		this.xInterval = Interval.from(Dimensionals.getCoordinate(this.points, 0));
+		this.yInterval = Interval.from(Dimensionals.getCoordinate(this.points, 1));
 		super.setHeight(f);
 	}
 
+	/**
+	 *
+	 * @param f
+	 */
 	@Override
-	public void setRotation(float f)
-	{
-		Interval newX = Interval.about(this.getCenterPosition().x, 0.0f);
-		Interval newY = Interval.about(this.getCenterPosition().y, 0.0f);
-		for(int i = 0; i < this.getPoints().size(); i++)
-		{
-			Vec2f rel = this.getPoints().get(i).minus(this.getCenterPosition());
-			this.points.set(i, this.getCenterPosition().plus(Vec2f.fromPolar(rel.angle() + (f - this.angle), rel.mag())));
-			newX = newX.and(Interval.about(this.points.get(i).x, 0.0f));
-			newY = newY.and(Interval.about(this.points.get(i).y, 0.0f));
-		}
-		this.angle = f;
-		this.xInterval = newX;
-		this.yInterval = newY;
-	}
-
-	@Override
-	public void setWidth(float f)
+	public void setWidth(double f)
 	{
 		if(f == this.getWidth()) return;
 
-		Vec2f projectionAtWidth = Vec2f.fromPolar(this.getRotation(), 1);
-		for(int i = 0; i < this.getPoints().size(); i++)
-			this.points.set(i, this.getPoints().get(i).plus(this.getPoints().get(i).minus(this.getCenterPosition()).projectOntoLine(Vec2f.ZEROES, projectionAtWidth).smult((f / this.getWidth()) - 1)));
-		this.xInterval = Interval.from(this.points, NVec2fs.getX());
-		this.yInterval = Interval.from(this.points, NVec2fs.getY());
+		Vector projectionAtWidth = Vector.fromPolar(1, this.getRotation());
+		for(int i = 0; i < this.points.size(); i++)
+			this.points.set(i, new Vector(this.points.get(i)).smult(2).minus(this.getCenterPosition()).projectOntoLine(Vector.ZERO_2D, projectionAtWidth).smult((f / this.getWidth()) - 1));
+		this.xInterval = Interval.from(Dimensionals.getCoordinate(this.points, 0));
+		this.yInterval = Interval.from(Dimensionals.getCoordinate(this.points, 1));
 		super.setWidth(f);
 	}
 
+	/**
+	 * @return
+	 */
 	@Override
 	public String toString()
 	{
 		return "Polygon{" +
-				"points=" + points +
-				", xInterval=" + xInterval +
-				", yInterval=" + yInterval + ", axes=" + axes() +
+				"points=" + this.points +
+				", xInterval=" + this.xInterval +
+				", yInterval=" + this.yInterval + ", axes=" + this.axes() +
 				'}';
 	}
 
-	private Vec2f unweightedCenter(List<Vec2f> points)
+	/**
+	 *
+	 * @param points
+	 * @return
+	 */
+	private Dimensional unweightedCenter(List<Dimensional> points)
 	{
-		float Cx = 0;
-		float Cy = 0;
+		double Cx = 0;
+		double Cy = 0;
 		for(int i = 0; i <= (points.size() - 1); i++)
 		{
-			Vec2f subI = points.get(i);
-			Vec2f subIPlusOne = points.get((i + 1) % (points.size()));
-			float areaOfThisTerm = (subI.x * subIPlusOne.y) - (subIPlusOne.x * subI.y);
-			Cx += (subI.x + subIPlusOne.x) * (areaOfThisTerm);
-			Cy += (subI.y + subIPlusOne.y) * (areaOfThisTerm);
+			Dimensional subI = points.get(i);
+			Dimensional subIPlusOne = points.get((i + 1) % (points.size()));
+			double areaOfThisTerm = (subI.getCoordinate(0) * subIPlusOne.getCoordinate(1)) - (subIPlusOne.getCoordinate(0) * subI.getCoordinate(1));
+			Cx += (subI.getCoordinate(0) + subIPlusOne.getCoordinate(0)) * (areaOfThisTerm);
+			Cy += (subI.getCoordinate(1) + subIPlusOne.getCoordinate(1)) * (areaOfThisTerm);
 		}
-		return new Vec2f(Cx, Cy);
+		return new Vector(Cx, Cy);
 	}
 
+	/**
+	 *
+	 * @return
+	 */
 	@Override
 	public Interval xInterval()
 	{
-		return xInterval;
+		return this.xInterval;
 	}
 
+	/**
+	 *
+	 * @return
+	 */
 	@Override
 	public Interval yInterval()
 	{
-		return yInterval;
+		return this.yInterval;
 	}
 }
