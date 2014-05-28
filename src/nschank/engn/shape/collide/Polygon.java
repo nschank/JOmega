@@ -18,11 +18,14 @@ import java.util.*;
 
 
 /**
- * Tou2
+ * Created by Nicolas Schank for package nschank.engn.shape.collide
+ * Created on 7 Oct 2013
+ * Last updated on 27 May 2014
  *
- * @author Nicolas Schank
- * @version 2013 10 07
- * @since 2013 10 07 3:22 PM
+ *
+ *
+ * @author nschank, Brown University
+ * @version 2.11
  */
 public class Polygon extends PCollidable
 {

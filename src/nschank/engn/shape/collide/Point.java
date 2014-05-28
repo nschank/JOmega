@@ -8,11 +8,14 @@ import java.awt.Graphics2D;
 
 
 /**
- * Tou1
+ * Created by Nicolas Schank for package nschank.engn.shape.collide
+ * Created on 28 Sep 2013
+ * Last updated on 27 May 2014
  *
- * @author Nicolas Schank
- * @version 2013 09 28
- * @since 2013 09 28 9:25 PM
+ *
+ *
+ * @author nschank, Brown University
+ * @version 2.8
  */
 public final class Point extends Circle
 {
