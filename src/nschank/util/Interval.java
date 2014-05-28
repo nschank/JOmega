@@ -123,7 +123,7 @@ public class Interval
 		return b.contains(a.getMin()) || b.contains(a.getMax()) || a.contains(b.getMin()) || a.contains(b.getMax());
 	}
 
-	public Interval plus(int delta)
+	public Interval plus(double delta)
 	{
 		return new Interval(this.min + delta, this.max + delta);
 	}
