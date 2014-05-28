@@ -12,13 +12,31 @@ import java.util.List;
  * A Utility class for dealing with Dimensional objects.
  *
  * @author nschank, Brown University
- * @version 2.2
+ * @version 2.4
  */
 public final class Dimensionals
 {
 	private Dimensionals()
 	{
 		//Utility class
+	}
+
+	/**
+	 * @param points
+	 *		A List of Dimensionals in clockwise order
+	 * @return The area of the enclosing points
+	 */
+	public static double area(List<Dimensional> points)
+	{
+		float sum = 0;
+		for(int i = 0; i <= (points.size() - 1); i++)
+		{
+			Dimensional subI = points.get(i);
+			Dimensional subIPlusOne = points.get((i + 1) % (points.size()));
+			sum += subI.getCoordinate(0) * subIPlusOne.getCoordinate(1) - subIPlusOne.getCoordinate(0) * subI
+					.getCoordinate(1);
+		}
+		return sum / 2f;
 	}
 
 	/**
