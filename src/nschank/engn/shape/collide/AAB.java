@@ -1,7 +1,8 @@
 package nschank.engn.shape.collide;
 
 import com.google.common.base.Optional;
-import cs195n.Vec2f;
+import nschank.collect.dim.Dimensional;
+import nschank.collect.dim.Vector;
 import nschank.util.Interval;
 import nschank.util.NLists;
 
@@ -22,59 +23,133 @@ import java.util.List;
  */
 public class AAB extends Polygon
 {
+	/**
+	 * @param location
+	 * @param width
+	 * @param height
+	 * @param c
+	 */
+	public AAB(Dimensional location, double width, double height, Color c)
+	{
+		super(location, width, height, c, new Vector(-1, -1), new Vector(1, -1), new Vector(1, 1), new Vector(-1, 1));
+	}
+
+	/**
+	 * @param left
+	 * @param right
+	 * @param top
+	 * @param bottom
+	 * @param c
+	 */
+	public AAB(double left, double right, double top, double bottom, Color c)
+	{
+		super(new Vector(left + ((right - left) / 2d), top + ((bottom - top) / 2d)), right - left, bottom - top, c, new Vector(-1, -1), new Vector(1, -1), new Vector(1, 1), new Vector(-1, 1));
+	}
+
+	/**
+	 * @return
+	 */
+	@Override
+	protected List<? extends Dimensional> axes()
+	{
+		return NLists.of(new Vector(0, 1), new Vector(1, 0));
+	}
+
+	/**
+	 *
+	 * @param other
+	 * 		Another object which may be colliding with this one.
+	 *
+	 * @return
+	 */
 	@Override
 	public Optional<Collision> collisionWith(Collidable other)
 	{
 		return inverseOf(other.collisionWithAAB(this));
 	}
 
-	@Override
-	List<Vec2f> axes()
-	{
-		return NLists.of(new Vec2f(0, 1), new Vec2f(1, 0));
-	}
-
+	/**
+	 *
+	 * @param other
+	 * 		An AAB that may be colliding with this object
+	 *
+	 * @return
+	 */
 	@Override
 	public Optional<Collision> collisionWithAAB(AAB other)
 	{
 		if(!this.xInterval().isIntersecting(other.xInterval()) || !this.yInterval().isIntersecting(other.yInterval()))
 			return Optional.absent();
 		else return super.collisionWithAAB(other);
-//		Vec2f point = new Vec2f(this.xInterval().collision(other.xInterval()),
-//				this.yInterval().collision(other.yInterval()));
-//		float diffX = this.xInterval().getMinimumTranslation(other.xInterval());
-//		float diffY = this.yInterval().getMinimumTranslation(other.yInterval());
-//		if(Math.abs(diffX) < Math.abs(diffY))
-//			return Optional.of((Collision)new DefaultCollision(point, new Vec2f(1,0).smult(diffX)));
-//		return Optional.of((Collision)new DefaultCollision(point, new Vec2f(0,1).smult(diffY)));
 	}
 
+	/**
+	 *
+	 * @param other
+	 * 		An Circle that may be colliding with this object
+	 *
+	 * @return
+	 */
 	@Override
 	public Optional<Collision> collisionWithCircle(Circle other)
 	{
 		return inverseOf(other.collisionWithAAB(this));
 	}
 
+	/**
+	 *
+	 * @param other
+	 * 		An Point that may be colliding with this object
+	 *
+	 * @return
+	 */
 	@Override
 	public Optional<Collision> collisionWithPoint(Point other)
 	{
 		return inverseOf(other.collisionWithAAB(this));
 	}
 
+	/**
+	 *
+	 * @param other
+	 *
+	 * @return
+	 */
 	@Override
-	public Optional<Float> distanceAlong(Ray r)
+	public boolean contains(Dimensional other)
 	{
-		float shortestCollision = -1;
+		return Interval.within(this.getMinX(), this.getMaxX(), other.getCoordinate(0)) && Interval.within(this.getMinY(), this.getMaxY(), other.getCoordinate(1));
+	}
+
+	/**
+	 * @return
+	 */
+	@Override
+	public Collidable copy()
+	{
+		return new AAB(this.getCenterPosition(), this.getWidth(), this.getHeight(), this.getColor());
+	}
+
+	/**
+	 * @param r
+	 * 		A Ray in the same x-y coordinate plane as this object, which may be pointed to this object
+	 *
+	 * @return
+	 */
+	@Override
+	public Optional<Double> distanceAlong(Ray r)
+	{
+		double shortestCollision = -1;
 
 		for(int i = -1; i < (this.points.size() - 1); i++)
 		{
-			Vec2f start = this.points.get((this.points.size() + i) % this.points.size());
-			Vec2f end = this.points.get((this.points.size() + i + 1) % this.points.size());
-			Vec2f perp = new Vec2f(start.minus(end).y, end.minus(start).x);
-			if((((start.minus(r.getStartLocation())).cross(r.getDirection()) * (end.minus(r.getStartLocation()).cross(r.getDirection()))) > 0) || (r.getDirection().dot(perp) == 0))
+			Vector start = new Vector(this.points.get((this.points.size() + i) % this.points.size()));
+			Vector end = new Vector(this.points.get((this.points.size() + i + 1) % this.points.size()));
+			Vector perp = new Vector(start.minus(end).getCoordinate(1), end.minus(start).getCoordinate(0));
+			if((((start.minus(r.getStartLocation())).crossProduct(r.getDirection()).getCoordinate(2) * (end.minus(r.getStartLocation()).crossProduct(r.getDirection()).getCoordinate(2))) > 0) || (r.getDirection().dotProduct(perp) == 0))
 				continue;
 
-			float collision = end.minus(r.getStartLocation()).dot(perp) / r.getDirection().dot(perp);
+			double collision = end.minus(r.getStartLocation()).dotProduct(perp) / r.getDirection().dotProduct(perp);
 			if((collision > 0) && ((shortestCollision < 0) || (shortestCollision > collision)))
 				shortestCollision = collision;
 		}
@@ -83,100 +158,116 @@ public class AAB extends Polygon
 		else return Optional.of(shortestCollision);
 	}
 
-	@Override
-	public float getRotation()
-	{
-		return 0.0f;
-	}
-
-	@Override
-	public void setRotation(float f)
-	{
-		//Do nothing
-	}
-
-	@Override
-	public void rotate(float f)
-	{
-		//Do nothing
-	}
-
-	@Override
-	public Collidable copy()
-	{
-		return new AAB(this.getCenterPosition(), this.getWidth(), this.getHeight(), this.getColor());
-	}
-
-	@Override
-	public float momentOfInertia()
-	{
-		return 0.0f;
-	}
-
+	/**
+	 * @param g
+	 */
 	@Override
 	public void draw(Graphics2D g)
 	{
 		g.setColor(this.getColor());
-		g.fillRect((int) (this.getCenterPosition().x - (this.getWidth() / 2f)), (int) (this.getCenterPosition().y - (this.getHeight() / 2f)), (int) this.getWidth(), (int) this.getHeight());
+		g.fillRect((int) (this.getCenterPosition().getCoordinate(0) - (this.getWidth() / 2f)), (int) (this.getCenterPosition().getCoordinate(1) - (this.getHeight() / 2f)), (int) this.getWidth(), (int) this.getHeight());
 	}
 
+	/**
+	 *
+	 * @return
+	 */
+	public double getMaxX()
+	{
+		return this.getCenterPosition().getCoordinate(0) + (this.getWidth() / 2);
+	}
+
+	/**
+	 *
+	 * @return
+	 */
+	public double getMaxY()
+	{
+		return this.getCenterPosition().getCoordinate(1) + (this.getHeight() / 2);
+	}
+
+	/**
+	 *
+	 * @return
+	 */
+	public double getMinX()
+	{
+		return this.getCenterPosition().getCoordinate(0) - (this.getWidth() / 2);
+	}
+
+	/**
+	 *
+	 * @return
+	 */
+	public double getMinY()
+	{
+		return this.getCenterPosition().getCoordinate(1) - (this.getHeight() / 2);
+	}
+
+	/**
+	 * @return
+	 */
 	@Override
-	boolean contains(Vec2f other)
+	public double getRotation()
 	{
-		return Interval.within(getMinX(), getMaxX(), other.x) && Interval.within(getMinY(), getMaxY(), other.y);
+		return 0.0f;
 	}
 
+	/**
+	 * @param f
+	 */
 	@Override
-	public List<Vec2f> getPoints()
+	public void setRotation(double f)
 	{
-		return NLists.of(new Vec2f(getMinX(), getMinY()), new Vec2f(getMinX(), getMaxY()), new Vec2f(getMaxX(), getMinY()), new Vec2f(getMaxX(), getMaxY()));
+		//Do nothing
 	}
 
-	public AAB(Vec2f location, float width, float height, Color c)
+	/**
+	 * @return
+	 */
+	@Override
+	public double momentOfInertia()
 	{
-		super(location, width, height, c, new Vec2f(-1, -1), new Vec2f(1, -1), new Vec2f(1, 1), new Vec2f(-1, 1));
+		return 0.0f;
 	}
 
-	public AAB(float left, float right, float top, float bottom, Color c)
+	/**
+	 *
+	 * @param f
+	 */
+	@Override
+	public void rotate(double f)
 	{
-		super(new Vec2f(left + ((right - left) / 2f), top + ((bottom - top) / 2f)), right - left, bottom - top, c, new Vec2f(-1, -1), new Vec2f(1, -1), new Vec2f(1, 1), new Vec2f(-1, 1));
+		//Do nothing
 	}
 
-	public float getMinX()
-	{
-		return this.getCenterPosition().x - (this.getWidth() / 2);
-	}
-
-	public float getMaxX()
-	{
-		return this.getCenterPosition().x + (this.getWidth() / 2);
-	}
-
-	public float getMinY()
-	{
-		return this.getCenterPosition().y - (this.getHeight() / 2);
-	}
-
-	public float getMaxY()
-	{
-		return this.getCenterPosition().y + (this.getHeight() / 2);
-	}
-
+	/**
+	 *
+	 * @return
+	 */
 	@Override
 	public String toString()
 	{
 		return "AAB={" + getCenterPosition() + " with width " + getWidth() + " and height " + getHeight() + '}';
 	}
 
+	/**
+	 *
+	 * @return
+	 */
 	@Override
 	public Interval xInterval()
 	{
-		return Interval.about(this.getCenterPosition().x, this.getWidth());
+		return Interval.about(this.getCenterPosition().getCoordinate(0), this.getWidth());
 	}
 
+	/**
+	 *
+	 * @return
+	 */
 	@Override
 	public Interval yInterval()
 	{
-		return Interval.about(this.getCenterPosition().y, this.getHeight());
+		return Interval.about(this.getCenterPosition().getCoordinate(1), this.getHeight());
 	}
 }
