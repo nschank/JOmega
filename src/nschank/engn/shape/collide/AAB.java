@@ -65,7 +65,7 @@ public class AAB extends Polygon
 	@Override
 	public Optional<Collision> collisionWith(Collidable other)
 	{
-		return inverseOf(other.collisionWithAAB(this));
+		return Collidables.inverseOf(other.collisionWithAAB(this));
 	}
 
 	/**
@@ -93,7 +93,7 @@ public class AAB extends Polygon
 	@Override
 	public Optional<Collision> collisionWithCircle(Circle other)
 	{
-		return inverseOf(other.collisionWithAAB(this));
+		return Collidables.inverseOf(other.collisionWithAAB(this));
 	}
 
 	/**
@@ -106,7 +106,7 @@ public class AAB extends Polygon
 	@Override
 	public Optional<Collision> collisionWithPoint(Point other)
 	{
-		return inverseOf(other.collisionWithAAB(this));
+		return Collidables.inverseOf(other.collisionWithAAB(this));
 	}
 
 	/**
