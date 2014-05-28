@@ -2,6 +2,9 @@ package nschank.collect.dim;
 
 import nschank.note.Immutable;
 
+import static java.lang.Math.PI;
+import static java.lang.Math.atan2;
+
 
 /**
  * Created by Nicolas Schank for package nschank.collect.dim
@@ -83,6 +86,17 @@ public class Vector extends Point
 		if(dim == 3) return Vector.ZERO_3D;
 
 		return new Vector(Point.zero(dim));
+	}
+
+	/**
+	 * Determines the angle that this Vector makes with the x-axis, in degrees. If this Vector is 0, throws an error.
+	 * @return the angle of this Vector with the x-axis
+	 * @throws java.lang.ArithmeticException
+	 */
+	public double angle()
+	{
+		double angle = atan2(this.getCoordinate(1), this.getCoordinate(0));
+		return angle < 0 ? angle + (2 * PI) : angle;
 	}
 
 	/**
