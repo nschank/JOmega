@@ -84,6 +84,13 @@ public class Interval
 		return and(this, b);
 	}
 
+	public Interval and(double d)
+	{
+		if(d >= this.max) return new Interval(this.min, d);
+		if(d <= this.min) return new Interval(d, this.max);
+		return this;
+	}
+
 	public static Interval and(Interval a, Interval b)
 	{
 		return new Interval(Math.min(a.getMin(), b.getMin()), Math.max(b.getMax(), a.getMax()));
@@ -114,7 +121,7 @@ public class Interval
 			if(startInterval == null) startInterval = Interval.about(todouble.apply(t), 0);
 			else startInterval = startInterval.and(Interval.about(todouble.apply(t), 0));
 		}
-		if(startInterval == null) throw new IllegalStateException("Cannot make an interval from nothing.");
+		if(startInterval == null) throw new IllegalArgumentException("Cannot make an interval from nothing.");
 		return startInterval;
 	}
 

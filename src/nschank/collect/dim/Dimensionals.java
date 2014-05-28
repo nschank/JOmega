@@ -1,5 +1,7 @@
 package nschank.collect.dim;
 
+import nschank.util.Interval;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,7 +14,7 @@ import java.util.List;
  * A Utility class for dealing with Dimensional objects.
  *
  * @author nschank, Brown University
- * @version 2.5
+ * @version 2.6
  */
 public final class Dimensionals
 {
@@ -100,6 +102,39 @@ public final class Dimensionals
 	public static double distance(Dimensional a, Dimensional b)
 	{
 		return Math.sqrt(sqdistance(a, b));
+	}
+
+	/*
+	todo expand to other dimensions, if that makes sense
+	 */
+
+	/**
+	 * Projects a given collection of points onto a particular axis. The Interval is along the x axis with only one
+	 * exception: if the axis is vertical. Only intended to work in 2D.
+	 * @param project
+	 * 		A collection of points to project
+	 * @param axis
+	 * 		An axis onto which to project those points
+	 * @return The Interval along that axis within which the points all fall.
+	 * @throws java.lang.IllegalArgumentException
+	 * 		If {@code project} is empty
+	 */
+	public static Interval project(Iterable<Dimensional> project, Dimensional axis)
+	{
+		Interval startInterval = null;
+		//Use the x axis unless the axis is vertical
+		int coordinate = 0;
+		if(axis.getCoordinate(0) == 0) coordinate = 1;
+
+		for(Dimensional d : project)
+		{
+			Vector toProject = new Vector(d);
+			if(startInterval == null)
+				startInterval = Interval.about(toProject.projectOnto(axis).getCoordinate(coordinate), 0);
+			else startInterval = startInterval.and(toProject.projectOnto(axis).getCoordinate(coordinate));
+		}
+		if(startInterval == null) throw new IllegalStateException("Cannot make an interval from nothing.");
+		return startInterval;
 	}
 
 	/**

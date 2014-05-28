@@ -237,9 +237,10 @@ public class Vector extends Point
 	 *
 	 * Remodelled from cs195n.Vec2f
 	 */
-	public final Vector projectOnto(Vector other)
+	public final Vector projectOnto(Dimensional other)
 	{
-		return other.smult(this.dotProduct(other) / other.mag2());
+		Vector v = new Vector(other);
+		return v.smult(this.dotProduct(v) / v.mag2());
 	}
 
 	/**
