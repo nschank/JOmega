@@ -25,8 +25,6 @@ import java.util.*;
  * Created on 7 Oct 2013
  * Last updated on 27 May 2014
  *
- *
- *
  * @author nschank, Brown University
  * @version 2.11
  */
@@ -103,7 +101,7 @@ public class Polygon extends PCollidable
 	/**
 	 * @return
 	 */
-	List<Dimensional> axes()
+	protected List<? extends Dimensional> axes()
 	{
 		List<Dimensional> myAxes = new ArrayList<>();
 		for(int i = -1; i < (this.points.size() - 1); i++)
@@ -189,7 +187,6 @@ public class Polygon extends PCollidable
 	}
 
 	/**
-	 *
 	 * @param other
 	 * 		Another object which may be colliding with this one.
 	 *
@@ -202,7 +199,6 @@ public class Polygon extends PCollidable
 	}
 
 	/**
-	 *
 	 * @param other
 	 * 		An AAB that may be colliding with this object
 	 *
@@ -215,7 +211,6 @@ public class Polygon extends PCollidable
 	}
 
 	/**
-	 *
 	 * @param other
 	 * 		An Circle that may be colliding with this object
 	 *
@@ -232,7 +227,6 @@ public class Polygon extends PCollidable
 	}
 
 	/**
-	 *
 	 * @param other
 	 * 		An Point that may be colliding with this object
 	 *
@@ -248,7 +242,6 @@ public class Polygon extends PCollidable
 	}
 
 	/**
-	 *
 	 * @param other
 	 * 		An Polygon that may be colliding with this object
 	 *
@@ -263,8 +256,8 @@ public class Polygon extends PCollidable
 	}
 
 	/**
-	 *
 	 * @param other
+	 *
 	 * @return
 	 */
 	@Override
@@ -325,7 +318,6 @@ public class Polygon extends PCollidable
 	}
 
 	/**
-	 *
 	 * @param g
 	 */
 	@Override
@@ -449,8 +441,10 @@ public class Polygon extends PCollidable
 
 	/**
 	 * todo
+	 *
 	 * @param mtv
 	 * @param other
+	 *
 	 * @return
 	 */
 	@Override
@@ -461,8 +455,10 @@ public class Polygon extends PCollidable
 
 	/**
 	 * todo
+	 *
 	 * @param mtv
 	 * @param other
+	 *
 	 * @return
 	 */
 	@Override
@@ -475,8 +471,10 @@ public class Polygon extends PCollidable
 
 	/**
 	 * todo
+	 *
 	 * @param mtv
 	 * @param other
+	 *
 	 * @return
 	 */
 	@Override
@@ -496,7 +494,6 @@ public class Polygon extends PCollidable
 	}
 
 	/**
-	 *
 	 * @return
 	 */
 	@Override
@@ -506,9 +503,9 @@ public class Polygon extends PCollidable
 	}
 
 	/**
-	 *
 	 * @param axis
 	 * @param projector
+	 *
 	 * @return
 	 */
 	@Override
@@ -528,7 +525,6 @@ public class Polygon extends PCollidable
 	}
 
 	/**
-	 *
 	 * @param newPosition
 	 */
 	@Override
@@ -544,7 +540,6 @@ public class Polygon extends PCollidable
 	}
 
 	/**
-	 *
 	 * @param f
 	 */
 	@Override
@@ -561,7 +556,6 @@ public class Polygon extends PCollidable
 	}
 
 	/**
-	 *
 	 * @param f
 	 */
 	@Override
@@ -591,8 +585,8 @@ public class Polygon extends PCollidable
 	}
 
 	/**
-	 *
 	 * @param points
+	 *
 	 * @return
 	 */
 	private Dimensional unweightedCenter(List<Dimensional> points)
@@ -611,7 +605,6 @@ public class Polygon extends PCollidable
 	}
 
 	/**
-	 *
 	 * @return
 	 */
 	@Override
@@ -621,7 +614,6 @@ public class Polygon extends PCollidable
 	}
 
 	/**
-	 *
 	 * @return
 	 */
 	@Override
