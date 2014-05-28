@@ -1,13 +1,10 @@
 package nschank.engn.shape.collide;
 
-import com.google.common.base.Function;
-import com.google.common.base.Functions;
 import com.google.common.base.Optional;
 import nschank.collect.dim.Dimensional;
 import nschank.collect.dim.Dimensionals;
 import nschank.collect.dim.Vector;
 import nschank.engn.shape.AbstractDrawable;
-import nschank.engn.shape.fxn.PointProjector;
 import nschank.util.Interval;
 import nschank.util.NLists;
 
@@ -33,7 +30,7 @@ import java.util.List;
  * the method isConcave() is provided for further error checking.
  *
  * @author nschank, Brown University
- * @version 3.2
+ * @version 3.3
  */
 public class Polygon extends AbstractDrawable implements Collidable
 {
@@ -103,26 +100,10 @@ public class Polygon extends AbstractDrawable implements Collidable
 		points.add(first);
 		points.add(second);
 		Collections.addAll(points, others);
-		double area6 = Dimensionals.area(points) * 6d;
-		Dimensional offFromCenter = this.unweightedCenter(points).sdiv(area6);
+		Dimensional offFromCenter = Dimensionals.weightedCenter(points);
 
-		Interval actualWidth = Interval.from(points, new Function<Dimensional, Double>()
-		{
-			@Override
-			public Double apply(Dimensional o)
-			{
-				return Double.valueOf(o.getCoordinate(0));
-			}
-		});
-
-		Interval actualHeight = Interval.from(points, new Function<Dimensional, Double>()
-		{
-			@Override
-			public Double apply(Dimensional o)
-			{
-				return Double.valueOf(o.getCoordinate(1));
-			}
-		});
+		Interval actualWidth = Interval.from(Dimensionals.getCoordinate(points, 0));
+		Interval actualHeight = Interval.from(Dimensionals.getCoordinate(points, 1));
 		super.setCenterPosition(offFromCenter);
 		super.setWidth(actualWidth.width());
 		super.setHeight(actualHeight.width());
@@ -327,7 +308,7 @@ public class Polygon extends AbstractDrawable implements Collidable
 	 * @param r
 	 * 		A Ray in the same x-y coordinate plane as this object, which may be pointed to this object
 	 *
-	 * @return
+	 * @return How far from the origin on the ray on which this shape appears
 	 */
 	@Override
 	public Optional<Double> distanceAlong(Ray r)
@@ -353,6 +334,7 @@ public class Polygon extends AbstractDrawable implements Collidable
 
 	/**
 	 * @param g
+	 * 		A Graphics object to draw this Polygon onto
 	 */
 	@Override
 	public void draw(Graphics2D g)
@@ -367,7 +349,7 @@ public class Polygon extends AbstractDrawable implements Collidable
 	}
 
 	/**
-	 * @return
+	 * @return The points that make up the edges of this {@code Polygon}, in clockwise order
 	 */
 	public Iterable<Dimensional> getPoints()
 	{
@@ -375,7 +357,7 @@ public class Polygon extends AbstractDrawable implements Collidable
 	}
 
 	/**
-	 * @return
+	 * @return The angle this Polygon make with the x-axis
 	 */
 	@Override
 	public double getRotation()
@@ -384,10 +366,11 @@ public class Polygon extends AbstractDrawable implements Collidable
 	}
 
 	/**
-	 * @param f
+	 * @param theta
+	 * 		The new angle this makes with the x-axis
 	 */
 	@Override
-	public void setRotation(double f)
+	public void setRotation(double theta)
 	{
 		Interval newX = Interval.about(this.getCenterPosition().getCoordinate(0), 0.0f);
 		Interval newY = Interval.about(this.getCenterPosition().getCoordinate(0), 0.0f);
@@ -396,40 +379,26 @@ public class Polygon extends AbstractDrawable implements Collidable
 		{
 			Vector rel = centre.minus(this.points.get(i)).smult(-1);
 			this.points.set(i, new Vector(this.getCenterPosition())
-					.plus(Vector.fromPolar(rel.mag(), rel.angle() + (f - this.angle))));
+					.plus(Vector.fromPolar(rel.mag(), rel.angle() + (theta - this.angle))));
 			newX = newX.and(Interval.about(this.points.get(i).getCoordinate(0), 0.0f));
 			newY = newY.and(Interval.about(this.points.get(i).getCoordinate(0), 0.0f));
 		}
-		this.angle = f;
+		this.angle = theta;
 		this.xInterval = newX;
 		this.yInterval = newY;
 	}
 
 	/**
 	 * @param points
+	 * 		Initializes a Polygon with the given list of points
 	 */
 	private void initPolygon(List<Dimensional> points)
 	{
-		double area6 = this.area(points) * 6d;
+		double area6 = Dimensionals.area(points) * 6d;
 		Dimensional offFromCenter = this.unweightedCenter(points).sdiv(area6);
 
-		Interval actualWidth = Interval.from(points, new Function<Dimensional, Double>()
-		{
-			@Override
-			public Double apply(Dimensional o)
-			{
-				return Double.valueOf(o.getCoordinate(0));
-			}
-		});
-
-		Interval actualHeight = Interval.from(points, new Function<Dimensional, Double>()
-		{
-			@Override
-			public Double apply(Dimensional o)
-			{
-				return Double.valueOf(o.getCoordinate(1));
-			}
-		});
+		Interval actualWidth = Interval.from(Dimensionals.getCoordinate(points, 0));
+		Interval actualHeight = Interval.from(Dimensionals.getCoordinate(points, 1));
 
 		List<Vector> addToCenters = new ArrayList<>();
 		double adjustedWidth = ((this.getWidth()) / (actualWidth.getMax() - actualWidth.getMin()));
@@ -462,7 +431,11 @@ public class Polygon extends AbstractDrawable implements Collidable
 	}
 
 	/**
-	 * @return
+	 * Determines whether this Polygon is concave. If so, finds the particular point.
+	 *
+	 * Not run internally due to slow runtime.
+	 *
+	 * @return A point which makes this {@code Polygon} concave, if one exists
 	 */
 	public Optional<Dimensional> isConcave()
 	{
@@ -470,14 +443,15 @@ public class Polygon extends AbstractDrawable implements Collidable
 		{
 			List<Dimensional> allElse = new ArrayList<>(this.points);
 			allElse.remove(point);
-			if(new Polygon(Color.BLACK, allElse.toArray(new Dimensional[allElse.size()])).contains(point))
+			if(new Polygon(Color.BLACK, allElse.get(0), allElse.get(1),
+					allElse.subList(2, allElse.size()).toArray(new Dimensional[allElse.size() - 2])).contains(point))
 				return Optional.of(point);
 		}
 		return Optional.absent();
 	}
 
 	/**
-	 * @return
+	 * @return The moment of inertia of this {@code Polygon}, assuming it has a mass of 1
 	 */
 	@Override
 	public double momentOfInertia()
@@ -487,27 +461,31 @@ public class Polygon extends AbstractDrawable implements Collidable
 
 	/**
 	 * @param axis
-	 *
-	 * @return
+	 *		An axis onto which to project this {@code Polygon}
+	 * @return The Interval along this axis along which this {@code Polygon} falls
 	 */
 	@Override
 	public Interval projectionOnto(Dimensional axis)
 	{
-		Function<Dimensional, Dimensional> p2p = new PointProjector(Vector.ZERO_2D, axis);
-		return Interval.from(this.points, Functions.compose(projector, p2p));
+		//return Interval.from(this.points, Functions.compose(projector, p2p));
+		return null;
+		//todo
 	}
 
 	/**
-	 * @param f
+	 * Rotates this {@code Polygon} {@code theta} radians.
+	 * @param theta
+	 * 		A number of radians to rotate this Polygon counter-clockwise
 	 */
 	@Override
-	public void rotate(double f)
+	public void rotate(double theta)
 	{
-		this.setRotation(((this.getRotation() + f) % (Math.PI * 2d)));
+		this.setRotation(((this.getRotation() + theta) % (Math.PI * 2d)));
 	}
 
 	/**
 	 * @param newPosition
+	 * 		A new centre of mass for this {@code Polygon}
 	 */
 	@Override
 	public void setCenterPosition(Dimensional newPosition)
@@ -516,50 +494,52 @@ public class Polygon extends AbstractDrawable implements Collidable
 		for(int i = 0; i < this.points.size(); i++)
 			this.points.set(i, newVector.plus(this.points.get(i)).minus(this.getCenterPosition()));
 
-		this.xInterval = this.xInterval.plus(-newVector.minus(this.getCenterPosition()).getCoordinate(0));
-		this.yInterval = this.yInterval.plus(-newVector.minus(this.getCenterPosition()).getCoordinate(1));
+		this.xInterval = this.xInterval.plus(newVector.minus(this.getCenterPosition()).getCoordinate(0));
+		this.yInterval = this.yInterval.plus(newVector.minus(this.getCenterPosition()).getCoordinate(1));
 		super.setCenterPosition(newPosition);
 	}
 
 	/**
-	 * @param f
+	 * @param h
+	 * 		The new height of this {@code Polygon}
 	 */
 	@Override
-	public void setHeight(double f)
+	public void setHeight(double h)
 	{
-		if(f == this.getHeight()) return;
+		if(h == this.getHeight()) return;
 
 		Vector projectionAtHeight = Vector
-				.fromPolar(((f / this.getHeight()) - 1), this.getRotation() + ((float) Math.PI / 2f));
+				.fromPolar(((h / this.getHeight()) - 1), this.getRotation() + ((float) Math.PI / 2f));
 		for(int i = 0; i < this.points.size(); i++)
 			this.points.set(i, new Vector(this.points.get(i)).smult(2).minus(this.getCenterPosition())
 															 .projectOntoLine(Vector.ZERO_2D, projectionAtHeight)
-															 .smult((f / this.getHeight()) - 1));
+															 .smult((h / this.getHeight()) - 1));
 		this.xInterval = Interval.from(Dimensionals.getCoordinate(this.points, 0));
 		this.yInterval = Interval.from(Dimensionals.getCoordinate(this.points, 1));
-		super.setHeight(f);
+		super.setHeight(h);
 	}
 
 	/**
-	 * @param f
+	 * @param w
+	 * 		The new width of this {@code Polygon}
 	 */
 	@Override
-	public void setWidth(double f)
+	public void setWidth(double w)
 	{
-		if(f == this.getWidth()) return;
+		if(w == this.getWidth()) return;
 
 		Vector projectionAtWidth = Vector.fromPolar(1, this.getRotation());
 		for(int i = 0; i < this.points.size(); i++)
 			this.points.set(i, new Vector(this.points.get(i)).smult(2).minus(this.getCenterPosition())
 															 .projectOntoLine(Vector.ZERO_2D, projectionAtWidth)
-															 .smult((f / this.getWidth()) - 1));
+															 .smult((w / this.getWidth()) - 1));
 		this.xInterval = Interval.from(Dimensionals.getCoordinate(this.points, 0));
 		this.yInterval = Interval.from(Dimensionals.getCoordinate(this.points, 1));
-		super.setWidth(f);
+		super.setWidth(w);
 	}
 
 	/**
-	 * @return
+	 * @return A string representation of this Polygon, with points, x and y Intervals, and axes.
 	 */
 	@Override
 	public String toString()
@@ -572,28 +552,7 @@ public class Polygon extends AbstractDrawable implements Collidable
 	}
 
 	/**
-	 * @param points
-	 *
-	 * @return
-	 */
-	private Vector unweightedCenter(List<Dimensional> points)
-	{
-		double Cx = 0;
-		double Cy = 0;
-		for(int i = 0; i <= (points.size() - 1); i++)
-		{
-			Dimensional subI = points.get(i);
-			Dimensional subIPlusOne = points.get((i + 1) % (points.size()));
-			double areaOfThisTerm = (subI.getCoordinate(0) * subIPlusOne.getCoordinate(1)) - (
-					subIPlusOne.getCoordinate(0) * subI.getCoordinate(1));
-			Cx += (subI.getCoordinate(0) + subIPlusOne.getCoordinate(0)) * (areaOfThisTerm);
-			Cy += (subI.getCoordinate(1) + subIPlusOne.getCoordinate(1)) * (areaOfThisTerm);
-		}
-		return new Vector(Cx, Cy);
-	}
-
-	/**
-	 * @return
+	 * @return The x interval (along the x axis) of this Polygon
 	 */
 	@Override
 	public Interval xInterval()
@@ -602,7 +561,7 @@ public class Polygon extends AbstractDrawable implements Collidable
 	}
 
 	/**
-	 * @return
+	 * @return The y interval (along the y axis) of this Polygon
 	 */
 	@Override
 	public Interval yInterval()
