@@ -76,6 +76,13 @@ public interface Collidable extends Drawable
 	 */
 	Optional<Collision> collisionWithPolygon(Polygon other);
 	/**
+	 *
+	 * @param point
+	 * 		A point in the same plane as this {@code Collidable}
+	 * @return Whether the given {@code point} is within this Collidable
+	 */
+	boolean contains(Dimensional point);
+	/**
 	 * @return A Collidable identical to this Collidable in position, size, rotation, and color.
 	 */
 	Collidable copy();
