@@ -31,6 +31,19 @@ public class Vector extends Point
 	private final double mag2;
 
 	/**
+	 * Creates a 2D Vector of the given length and at the given angle from the x-axis.
+	 * @param distance
+	 * 		The length of the produced Vector
+	 * @param angle
+	 * 		The angle of the Vector in radians
+	 * @return A 2D Vector as produced from the given polar coordinates
+	 */
+	public static Vector fromPolar(double distance, double angle)
+	{
+		return new Vector(distance * Math.cos(angle), distance * Math.sin(angle));
+	}
+
+	/**
 	 * Creates a Vector from the origin to the given coordinates
 	 *
 	 * @param coordinates
