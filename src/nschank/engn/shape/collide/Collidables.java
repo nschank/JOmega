@@ -1,0 +1,48 @@
+package nschank.engn.shape.collide;
+
+import com.google.common.base.Optional;
+
+
+/**
+ * Created by Nicolas Schank for package nschank.engn.shape.collide;
+ * Created on 28 May 2014
+ * Last updated on 28 May 2014
+ *
+ * A Utility class meant to make working with Collidables and Collisions easier.
+ *
+ * @author nschank, Brown University
+ * @version 1.1
+ */
+public final class Collidables
+{
+	/**
+	 *
+	 */
+	private Collidables()
+	{
+		//Utility class
+	}
+
+	/**
+	 * Returns the inverse of this Collision, still in an Optional, if one exists. If it does not exist, returns
+	 * Optional.absent().
+	 *
+	 * @param invert
+	 * 		A Collision to invert
+	 *
+	 * @return An Optional of the inverse of this Collision, if one exists
+	 */
+	public static Optional<Collidable.Collision> inverseOf(Optional<Collidable.Collision> invert)
+	{
+		if(invert.isPresent()) return Optional.of(invert.get().inverse());
+		return Optional.absent();
+	}
+
+	/**
+	 *
+	 */
+	public static void main(String[] args)
+	{
+
+	}
+}
