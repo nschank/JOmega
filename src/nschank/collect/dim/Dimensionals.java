@@ -3,18 +3,47 @@ package nschank.collect.dim;
 /**
  * Created by Nicolas Schank for package nschank.collect.dim
  * Created 13 Feb 2014
- * Last updated 25 Mar 2014
+ * Last updated 27 May 2014
  *
  * A Utility class for dealing with Dimensional objects.
  *
  * @author nschank, Brown University
- * @version 2.1
+ * @version 2.2
  */
 public final class Dimensionals
 {
 	private Dimensionals()
 	{
 		//Utility class
+	}
+
+	/**
+	 * Given a collection of points and a point of origin, returns the point which is closest to the point of origin. If
+	 * the collection is empty, returns {@code null}. If any point in the collection has a distance of 0, returns that point
+	 * immediately. If multiple points are at the same calculated closest distance from the point of origin, will
+	 * return the first one.
+	 *
+	 * @param from
+	 * 		A point to compare the distance from
+	 * @param of
+	 * 		A collection of points to measure from {@code from}
+	 * @return The closest point to {@code from} within {@code of}
+	 */
+	public static Dimensional closestTo(Dimensional from, Iterable<Dimensional> of)
+	{
+		Dimensional closest = null;
+		double distance = Double.MAX_VALUE;
+		for(Dimensional pt : of)
+		{
+			double ptdist = sqdistance(pt, from);
+			if((closest == null) || (distance > ptdist))
+			{
+				closest = pt;
+				distance = ptdist;
+				if(distance == 0) return closest;
+			}
+		}
+		return closest;
 	}
 
 	/**
