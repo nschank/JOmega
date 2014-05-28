@@ -3,31 +3,36 @@ package nschank.engn.shape.collide;
 import com.google.common.base.Function;
 import com.google.common.base.Functions;
 import com.google.common.base.Optional;
-import cs195n.Vec2f;
 import nschank.collect.dim.Dimensional;
 import nschank.collect.dim.Dimensionals;
 import nschank.collect.dim.Vector;
-import nschank.collect.tuple.Pair;
 import nschank.engn.shape.AbstractDrawable;
 import nschank.engn.shape.fxn.PointProjector;
-import nschank.engn.shape.fxn.PointToFloat;
 import nschank.util.Interval;
 import nschank.util.NLists;
-import nschank.util.NVec2fs;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.Path2D;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
+
+//TODO: update with a Convex Hull
 
 /**
  * Created by Nicolas Schank for package nschank.engn.shape.collide
  * Created on 7 Oct 2013
- * Last updated on 27 May 2014
+ * Last updated on 28 May 2014
+ *
+ * A Polygon is one of the four main types of Collidables, and likely the most flexible. Any convex Polygon (with a
+ * finite number of points) can be expressed by this class by supplying it with all of the vertices as a series of
+ * Dimensionals given in clockwise order. A non-convex polygon will be accepted, but will have undefined behaviour;
+ * the method isConcave() is provided for further error checking.
  *
  * @author nschank, Brown University
- * @version 2.11
+ * @version 3.1
  */
 public class Polygon extends AbstractDrawable implements Collidable
 {
@@ -37,7 +42,32 @@ public class Polygon extends AbstractDrawable implements Collidable
 	private Interval xInterval;
 	private Interval yInterval;
 
-	public Polygon(Dimensional location, double width, double height, Color c, Dimensional relativeStart, Dimensional relativeSecond, Dimensional... relativeOthers)
+	/**
+	 * Creates a Polygon centered at the given centre of mass, with the given width and height, and using the given
+	 * three or more points (in clockwise order) as a map of how the different points should be placed relative each other.
+	 * For example, a square can be described by (0,0), (0,1), (1,1), (1,0); the centre of the square will be placed at
+	 * the given {@code location}; and its {@code width} and {@code height} will be set as given (and will obviously be
+	 * a rectangle, if not equal). Scale of the points provided is unused.
+	 *
+	 * @param location
+	 * 		The centre of mass of the Polygon after initialization
+	 * @param width
+	 * 		The width of the Polygon, along the x-axis
+	 * @param height
+	 * 		The height of the Polygon, along the y-axis
+	 * @param c
+	 * 		The Color of the Polygon
+	 * @param relativeStart
+	 * 		Any 2D point in the coordinate plane, as a Dimensional
+	 * @param relativeSecond
+	 * 		Another 2D point in the coordinate plane that is one point clockwise on the Polygon
+	 * @param relativeOthers
+	 * 		The remainder of the points in the Polygon, in 2D, at distances relative to the distance between the first
+	 * 		and second point.
+	 */
+	public Polygon(final Dimensional location, final double width, final double height, final Color c,
+				   final Dimensional relativeStart, final Dimensional relativeSecond,
+				   final Dimensional... relativeOthers)
 	{
 		super(location, width, height, c);
 
@@ -50,12 +80,29 @@ public class Polygon extends AbstractDrawable implements Collidable
 		this.setCenterPosition(location);
 	}
 
-	public Polygon(Color c, Dimensional... others)
+	/**
+	 * Creates a Polygon of the given Color whose points are exactly those given. The centre of mass of those points will
+	 * be the new location of the Polygon, and the width and height will be created as expected. The points should be
+	 * supplied in clockwise order; if they are not, or do not produce a Convex Polygon, undefined behaviour will result.
+	 *
+	 * @param c
+	 * 		The Color of the Polygon
+	 * @param first
+	 * 		Any vertex of the Polygon
+	 * @param second
+	 * 		The vertex one clockwise of {@code first} on the Polygon
+	 * @param others
+	 * 		All other vertices of the Polygon clockwise from {@code second}, not including {@code first}.
+	 */
+	public Polygon(final Color c, final Dimensional first, final Dimensional second, final Dimensional... others)
 	{
 		super(nschank.collect.dim.Point.ZERO_2D, 0, 0, c);
+
 		List<Dimensional> points = new ArrayList<>();
+		points.add(first);
+		points.add(second);
 		Collections.addAll(points, others);
-		double area6 = this.area(points) * 6f;
+		double area6 = Dimensionals.area(points) * 6d;
 		Dimensional offFromCenter = this.unweightedCenter(points).sdiv(area6);
 
 		Interval actualWidth = Interval.from(points, new Function<Dimensional, Double>()
@@ -83,23 +130,6 @@ public class Polygon extends AbstractDrawable implements Collidable
 	}
 
 	/**
-	 * @param points
-	 *
-	 * @return
-	 */
-	private double area(List<Dimensional> points)
-	{
-		float sum = 0;
-		for(int i = 0; i <= (points.size() - 1); i++)
-		{
-			Dimensional subI = points.get(i);
-			Dimensional subIPlusOne = points.get((i + 1) % (points.size()));
-			sum += subI.getCoordinate(0) * subIPlusOne.getCoordinate(1) - subIPlusOne.getCoordinate(0) * subI.getCoordinate(1);
-		}
-		return sum / 2f;
-	}
-
-	/**
 	 * @return
 	 */
 	protected List<? extends Dimensional> axes()
@@ -118,74 +148,74 @@ public class Polygon extends AbstractDrawable implements Collidable
 		return myAxes;
 	}
 
-	/**
-	 * TODO
-	 *
-	 * @param shapeAxes1
-	 * @param shapeAxes2
-	 * @param other
-	 *
-	 * @return
-	 */
-	Optional<Collision> collisionAlongAxes(Iterable<? extends Dimensional> shapeAxes1, Iterable<? extends Dimensional> shapeAxes2, PCollidable other)
-	{
-		Optional<Pair<Dimensional, Double>> shape = this.collisionAlongShapeAxes(shapeAxes1, shapeAxes2, other);
-		if(shape.isPresent()) return this.minimumCollisionFrom(shape.get(), other);
-		return Optional.absent();
-	}
-
-	/**
-	 * TODO
-	 *
-	 * @param shapeAxes1
-	 * @param shapeAxes2
-	 * @param other
-	 *
-	 * @return
-	 */
-	Optional<Pair<Dimensional, Double>> collisionAlongShapeAxes(Iterable<? extends Dimensional> shapeAxes1, Iterable<? extends Dimensional> shapeAxes2, PCollidable other)
-	{
-		Optional<Dimensional> minimumAxis = Optional.absent();
-		Optional<Double> minimumAxisExchange = Optional.absent();
-
-		for(Dimensional axis : shapeAxes1)
-		{
-			PointToFloat use = new PointToFloat(nschank.collect.dim.Point.ZERO_2D, axis);
-
-			Interval projection = this.projectionOnto(axis, use);
-			Interval otherProjection = other.projectionOnto(axis, use);
-
-			if(!projection.isIntersecting(otherProjection)) return Optional.absent();
-
-			double minimumExchange = projection.getMinimumTranslation(otherProjection);
-
-			if(!minimumAxisExchange.isPresent() || (Math.abs(minimumAxisExchange.get()) > Math.abs(minimumExchange)))
-			{
-				minimumAxis = Optional.of(axis);
-				minimumAxisExchange = Optional.of(minimumExchange);
-			}
-		}
-
-		for(Dimensional axis : shapeAxes2)
-		{
-			PointToFloat use = new PointToFloat(nschank.collect.dim.Point.ZERO_2D, axis);
-
-			Interval projection = this.projectionOnto(axis, use);
-			Interval otherProjection = other.projectionOnto(axis, use);
-
-			if(!projection.isIntersecting(otherProjection)) return Optional.absent();
-
-			double minimumExchange = projection.getMinimumTranslation(otherProjection);
-
-			if(!minimumAxisExchange.isPresent() || (Math.abs(minimumAxisExchange.get()) > Math.abs(minimumExchange)))
-			{
-				minimumAxis = Optional.of(axis);
-				minimumAxisExchange = Optional.of(minimumExchange);
-			}
-		}
-
-		return Optional.of(Pair.tuple(minimumAxis.get(), minimumAxisExchange.get()));
-	}
+//	/**
+//	 * TODO
+//	 *
+//	 * @param shapeAxes1
+//	 * @param shapeAxes2
+//	 * @param other
+//	 *
+//	 * @return
+//	 */
+//	Optional<Collision> collisionAlongAxes(Iterable<? extends Dimensional> shapeAxes1, Iterable<? extends Dimensional> shapeAxes2, PCollidable other)
+//	{
+//		Optional<Pair<Dimensional, Double>> shape = this.collisionAlongShapeAxes(shapeAxes1, shapeAxes2, other);
+//		if(shape.isPresent()) return this.minimumCollisionFrom(shape.get(), other);
+//		return Optional.absent();
+//	}
+//
+//	/**
+//	 * TODO
+//	 *
+//	 * @param shapeAxes1
+//	 * @param shapeAxes2
+//	 * @param other
+//	 *
+//	 * @return
+//	 */
+//	Optional<Pair<Dimensional, Double>> collisionAlongShapeAxes(Iterable<? extends Dimensional> shapeAxes1, Iterable<? extends Dimensional> shapeAxes2, PCollidable other)
+//	{
+//		Optional<Dimensional> minimumAxis = Optional.absent();
+//		Optional<Double> minimumAxisExchange = Optional.absent();
+//
+//		for(Dimensional axis : shapeAxes1)
+//		{
+//			PointToFloat use = new PointToFloat(nschank.collect.dim.Point.ZERO_2D, axis);
+//
+//			Interval projection = this.projectionOnto(axis, use);
+//			Interval otherProjection = other.projectionOnto(axis, use);
+//
+//			if(!projection.isIntersecting(otherProjection)) return Optional.absent();
+//
+//			double minimumExchange = projection.getMinimumTranslation(otherProjection);
+//
+//			if(!minimumAxisExchange.isPresent() || (Math.abs(minimumAxisExchange.get()) > Math.abs(minimumExchange)))
+//			{
+//				minimumAxis = Optional.of(axis);
+//				minimumAxisExchange = Optional.of(minimumExchange);
+//			}
+//		}
+//
+//		for(Dimensional axis : shapeAxes2)
+//		{
+//			PointToFloat use = new PointToFloat(nschank.collect.dim.Point.ZERO_2D, axis);
+//
+//			Interval projection = this.projectionOnto(axis, use);
+//			Interval otherProjection = other.projectionOnto(axis, use);
+//
+//			if(!projection.isIntersecting(otherProjection)) return Optional.absent();
+//
+//			double minimumExchange = projection.getMinimumTranslation(otherProjection);
+//
+//			if(!minimumAxisExchange.isPresent() || (Math.abs(minimumAxisExchange.get()) > Math.abs(minimumExchange)))
+//			{
+//				minimumAxis = Optional.of(axis);
+//				minimumAxisExchange = Optional.of(minimumExchange);
+//			}
+//		}
+//
+//		return Optional.of(Pair.tuple(minimumAxis.get(), minimumAxisExchange.get()));
+//	}
 
 	/**
 	 * @param other
@@ -196,7 +226,7 @@ public class Polygon extends AbstractDrawable implements Collidable
 	@Override
 	public Optional<Collision> collisionWith(Collidable other)
 	{
-		return inverseOf(other.collisionWithPolygon(this));
+		return Collidables.inverseOf(other.collisionWithPolygon(this));
 	}
 
 	/**
@@ -307,8 +337,9 @@ public class Polygon extends AbstractDrawable implements Collidable
 			Vector end = new Vector(this.points.get((this.points.size() + i + 1) % this.points.size()));
 
 			Vector perp = new Vector(start.minus(end).getCoordinate(1), end.minus(start).getCoordinate(0));
-			if((((start.minus(r.getStartLocation())).crossProduct(r.getDirection()).getCoordinate(2) * (end.minus(r.getStartLocation()).crossProduct(r.getDirection()).getCoordinate(2))) > 0) || (r.getDirection().dotProduct(perp) == 0))
-				continue;
+			if((((start.minus(r.getStartLocation())).crossProduct(r.getDirection()).getCoordinate(2) * (end
+					.minus(r.getStartLocation()).crossProduct(r.getDirection()).getCoordinate(2))) > 0) || (
+					r.getDirection().dotProduct(perp) == 0)) continue;
 			double collision = end.minus(r.getStartLocation()).dotProduct(perp) / r.getDirection().dotProduct(perp);
 			if((collision > 0) && ((shortestCollision < 0) || (shortestCollision > collision)))
 				shortestCollision = collision;
@@ -326,7 +357,8 @@ public class Polygon extends AbstractDrawable implements Collidable
 	{
 		g.setColor(this.getColor());
 		Path2D path = new Path2D.Double();
-		path.moveTo(this.points.get(this.points.size() - 1).getCoordinate(0), this.points.get(this.points.size() - 1).getCoordinate(1));
+		path.moveTo(this.points.get(this.points.size() - 1).getCoordinate(0),
+				this.points.get(this.points.size() - 1).getCoordinate(1));
 		for(Dimensional v : this.points)
 			path.lineTo(v.getCoordinate(0), v.getCoordinate(1));
 		g.fill(path);
@@ -361,7 +393,8 @@ public class Polygon extends AbstractDrawable implements Collidable
 		for(int i = 0; i < this.points.size(); i++)
 		{
 			Vector rel = centre.minus(this.points.get(i)).smult(-1);
-			this.points.set(i, new Vector(this.getCenterPosition()).plus(Vector.fromPolar(rel.mag(), rel.angle() + (f - this.angle))));
+			this.points.set(i, new Vector(this.getCenterPosition())
+					.plus(Vector.fromPolar(rel.mag(), rel.angle() + (f - this.angle))));
 			newX = newX.and(Interval.about(this.points.get(i).getCoordinate(0), 0.0f));
 			newY = newY.and(Interval.about(this.points.get(i).getCoordinate(0), 0.0f));
 		}
@@ -400,7 +433,8 @@ public class Polygon extends AbstractDrawable implements Collidable
 		double adjustedWidth = ((this.getWidth()) / (actualWidth.getMax() - actualWidth.getMin()));
 		double adjustedHeight = ((this.getHeight()) / (actualHeight.getMax() - actualHeight.getMin()));
 		for(Dimensional v : points)
-			addToCenters.add(new Vector((new Vector(v).minus(offFromCenter).getCoordinate(0) * adjustedWidth), (new Vector(v).minus(offFromCenter).getCoordinate(1) * adjustedHeight)));
+			addToCenters.add(new Vector((new Vector(v).minus(offFromCenter).getCoordinate(0) * adjustedWidth),
+					(new Vector(v).minus(offFromCenter).getCoordinate(1) * adjustedHeight)));
 
 		double numeratorSum = 0.0;
 		double denominatorSum = 0.0;
@@ -441,60 +475,6 @@ public class Polygon extends AbstractDrawable implements Collidable
 	}
 
 	/**
-	 * todo
-	 *
-	 * @param mtv
-	 * @param other
-	 *
-	 * @return
-	 */
-	@Override
-	Optional<Collision> minimumCollisionFrom(Pair<Vec2f, Float> mtv, PCollidable other)
-	{
-		return inverseOf(other.minimumCollisionFromPolygon(Pair.tuple(mtv.getA(), -1 * mtv.getB()), this));
-	}
-
-	/**
-	 * todo
-	 *
-	 * @param mtv
-	 * @param other
-	 *
-	 * @return
-	 */
-	@Override
-	Optional<Collision> minimumCollisionFromCircle(Pair<Vec2f, Float> mtv, Circle other)
-	{
-		Vec2f closest = NVec2fs.closestTo(other.getCenterPosition(), this.getPoints());
-		Collision c = new DefaultCollision(other.getCenterPosition().plus(closest.minus(other.getCenterPosition()).normalized().smult(other.getRadius())), mtv.getA().normalized().smult(mtv.getB()));
-		return Optional.of(c);
-	}
-
-	/**
-	 * todo
-	 *
-	 * @param mtv
-	 * @param other
-	 *
-	 * @return
-	 */
-	@Override
-	Optional<Collision> minimumCollisionFromPolygon(Pair<Vec2f, Float> mtv, Polygon other)
-	{
-		Set<Vec2f> allPositions = new HashSet<>();
-		for(Vec2f v : this.getPoints())
-			if(other.contains(v)) allPositions.add(v);
-		for(Vec2f v : other.getPoints())
-			if(this.contains(v)) allPositions.add(v);
-		if(allPositions.isEmpty())
-		{
-			return Optional.absent();
-		}
-		Collision c = new DefaultCollision(NVec2fs.average(allPositions), mtv.getA().smult(mtv.getB()));
-		return Optional.of(c);
-	}
-
-	/**
 	 * @return
 	 */
 	@Override
@@ -505,15 +485,14 @@ public class Polygon extends AbstractDrawable implements Collidable
 
 	/**
 	 * @param axis
-	 * @param projector
 	 *
 	 * @return
 	 */
 	@Override
-	Interval projectionOnto(Dimensional axis, Function<Dimensional, Double> projector)
+	public Interval projectionOnto(Dimensional axis)
 	{
 		Function<Dimensional, Dimensional> p2p = new PointProjector(Vector.ZERO_2D, axis);
-		return Interval.from(this.getPoints(), Functions.compose(projector, p2p));
+		return Interval.from(this.points, Functions.compose(projector, p2p));
 	}
 
 	/**
@@ -522,7 +501,7 @@ public class Polygon extends AbstractDrawable implements Collidable
 	@Override
 	public void rotate(double f)
 	{
-		this.setRotation(((this.getRotation() + f) % (Math.PI * 2f)));
+		this.setRotation(((this.getRotation() + f) % (Math.PI * 2d)));
 	}
 
 	/**
@@ -548,9 +527,12 @@ public class Polygon extends AbstractDrawable implements Collidable
 	{
 		if(f == this.getHeight()) return;
 
-		Vector projectionAtHeight = Vector.fromPolar(((f / this.getHeight()) - 1), this.getRotation() + ((float) Math.PI / 2f));
+		Vector projectionAtHeight = Vector
+				.fromPolar(((f / this.getHeight()) - 1), this.getRotation() + ((float) Math.PI / 2f));
 		for(int i = 0; i < this.points.size(); i++)
-			this.points.set(i, new Vector(this.points.get(i)).smult(2).minus(this.getCenterPosition()).projectOntoLine(Vector.ZERO_2D, projectionAtHeight).smult((f / this.getHeight()) - 1));
+			this.points.set(i, new Vector(this.points.get(i)).smult(2).minus(this.getCenterPosition())
+															 .projectOntoLine(Vector.ZERO_2D, projectionAtHeight)
+															 .smult((f / this.getHeight()) - 1));
 		this.xInterval = Interval.from(Dimensionals.getCoordinate(this.points, 0));
 		this.yInterval = Interval.from(Dimensionals.getCoordinate(this.points, 1));
 		super.setHeight(f);
@@ -566,7 +548,9 @@ public class Polygon extends AbstractDrawable implements Collidable
 
 		Vector projectionAtWidth = Vector.fromPolar(1, this.getRotation());
 		for(int i = 0; i < this.points.size(); i++)
-			this.points.set(i, new Vector(this.points.get(i)).smult(2).minus(this.getCenterPosition()).projectOntoLine(Vector.ZERO_2D, projectionAtWidth).smult((f / this.getWidth()) - 1));
+			this.points.set(i, new Vector(this.points.get(i)).smult(2).minus(this.getCenterPosition())
+															 .projectOntoLine(Vector.ZERO_2D, projectionAtWidth)
+															 .smult((f / this.getWidth()) - 1));
 		this.xInterval = Interval.from(Dimensionals.getCoordinate(this.points, 0));
 		this.yInterval = Interval.from(Dimensionals.getCoordinate(this.points, 1));
 		super.setWidth(f);
@@ -590,7 +574,7 @@ public class Polygon extends AbstractDrawable implements Collidable
 	 *
 	 * @return
 	 */
-	private Dimensional unweightedCenter(List<Dimensional> points)
+	private Vector unweightedCenter(List<Dimensional> points)
 	{
 		double Cx = 0;
 		double Cy = 0;
@@ -598,7 +582,8 @@ public class Polygon extends AbstractDrawable implements Collidable
 		{
 			Dimensional subI = points.get(i);
 			Dimensional subIPlusOne = points.get((i + 1) % (points.size()));
-			double areaOfThisTerm = (subI.getCoordinate(0) * subIPlusOne.getCoordinate(1)) - (subIPlusOne.getCoordinate(0) * subI.getCoordinate(1));
+			double areaOfThisTerm = (subI.getCoordinate(0) * subIPlusOne.getCoordinate(1)) - (
+					subIPlusOne.getCoordinate(0) * subI.getCoordinate(1));
 			Cx += (subI.getCoordinate(0) + subIPlusOne.getCoordinate(0)) * (areaOfThisTerm);
 			Cy += (subI.getCoordinate(1) + subIPlusOne.getCoordinate(1)) * (areaOfThisTerm);
 		}
