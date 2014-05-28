@@ -15,6 +15,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.Path2D;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -32,7 +33,7 @@ import java.util.List;
  * the method isConcave() is provided for further error checking.
  *
  * @author nschank, Brown University
- * @version 3.1
+ * @version 3.2
  */
 public class Polygon extends AbstractDrawable implements Collidable
 {
@@ -130,7 +131,7 @@ public class Polygon extends AbstractDrawable implements Collidable
 	}
 
 	/**
-	 * @return
+	 * @return The axes this Polygon uses under the separating axis theorem
 	 */
 	protected List<? extends Dimensional> axes()
 	{
@@ -221,7 +222,7 @@ public class Polygon extends AbstractDrawable implements Collidable
 	 * @param other
 	 * 		Another object which may be colliding with this one.
 	 *
-	 * @return
+	 * @return A Collision between this object and the other object, if it exists.
 	 */
 	@Override
 	public Optional<Collision> collisionWith(Collidable other)
@@ -233,7 +234,7 @@ public class Polygon extends AbstractDrawable implements Collidable
 	 * @param other
 	 * 		An AAB that may be colliding with this object
 	 *
-	 * @return
+	 * @return A Collision between this object and the given AAB, if it exists.
 	 */
 	@Override
 	public Optional<Collision> collisionWithAAB(AAB other)
@@ -245,7 +246,7 @@ public class Polygon extends AbstractDrawable implements Collidable
 	 * @param other
 	 * 		An Circle that may be colliding with this object
 	 *
-	 * @return
+	 * @return A Collision between this object and the given Circle, if it exists.
 	 */
 	@Override
 	public Optional<Collision> collisionWithCircle(Circle other)
@@ -261,7 +262,7 @@ public class Polygon extends AbstractDrawable implements Collidable
 	 * @param other
 	 * 		An Point that may be colliding with this object
 	 *
-	 * @return
+	 * @return A Collision between this object and the given Point, if it exists.
 	 */
 	@Override
 	public Optional<Collision> collisionWithPoint(Point other)
@@ -276,7 +277,7 @@ public class Polygon extends AbstractDrawable implements Collidable
 	 * @param other
 	 * 		An Polygon that may be colliding with this object
 	 *
-	 * @return
+	 * @return A Collision between this object and the given Polygon, if it exists.
 	 */
 	@Override
 	public Optional<Collision> collisionWithPolygon(Polygon other)
@@ -288,8 +289,8 @@ public class Polygon extends AbstractDrawable implements Collidable
 
 	/**
 	 * @param other
-	 *
-	 * @return
+	 *		A point within the same plane as this shape
+	 * @return Whether {@code other} is inside this shape
 	 */
 	@Override
 	public boolean contains(Dimensional other)
@@ -310,15 +311,16 @@ public class Polygon extends AbstractDrawable implements Collidable
 	}
 
 	/**
-	 * @return
+	 * @return A Polygon identical to this one.
 	 */
 	@Override
 	public Collidable copy()
 	{
-		List<Dimensional> toUse = new ArrayList<>();
-		for(Dimensional v : this.points)
-			toUse.add(new nschank.collect.dim.Point(v.getCoordinate(0), v.getCoordinate(1)));
-		return new Polygon(this.getColor(), toUse.toArray(new Dimensional[toUse.size()]));
+		Collection<Dimensional> rest = new ArrayList<>();
+		for(int i = 2; i < this.points.size(); i++)
+			rest.add(new nschank.collect.dim.Point(this.points.get(i)));
+		return new Polygon(this.getColor(), new nschank.collect.dim.Point(this.points.get(0)),
+				new nschank.collect.dim.Point(this.points.get(1)), rest.toArray(new Dimensional[rest.size()]));
 	}
 
 	/**
