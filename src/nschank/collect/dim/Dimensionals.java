@@ -28,7 +28,7 @@ public final class Dimensionals
 	 *		A List of Dimensionals in clockwise order
 	 * @return The area of the enclosing points
 	 */
-	public static double area(List<Dimensional> points)
+	public static double area(List<? extends Dimensional> points)
 	{
 		double sum = 0;
 		for(int i = 0; i <= (points.size() - 1); i++)
@@ -53,7 +53,7 @@ public final class Dimensionals
 	 * 		A collection of points to measure from {@code from}
 	 * @return The closest point to {@code from} within {@code of}
 	 */
-	public static Dimensional closestTo(Dimensional from, Iterable<Dimensional> of)
+	public static Dimensional closestTo(Dimensional from, Iterable<? extends Dimensional> of)
 	{
 		Dimensional closest = null;
 		double distance = Double.MAX_VALUE;
@@ -81,7 +81,7 @@ public final class Dimensionals
 	 * 		A dimension
 	 * @return All coordinates in that dimension
 	 */
-	public static List<Double> getCoordinate(Iterable<Dimensional> dimensionals, int coordinate)
+	public static List<Double> getCoordinate(Iterable<? extends Dimensional> dimensionals, int coordinate)
 	{
 		List<Double> coordinates = new ArrayList<>();
 		for(Dimensional d : dimensionals)
@@ -119,7 +119,7 @@ public final class Dimensionals
 	 * @throws java.lang.IllegalArgumentException
 	 * 		If {@code project} is empty
 	 */
-	public static Interval project(Iterable<Dimensional> project, Dimensional axis)
+	public static Interval project(Iterable<? extends Dimensional> project, Dimensional axis)
 	{
 		Interval startInterval = null;
 		//Use the x axis unless the axis is vertical
@@ -170,7 +170,7 @@ public final class Dimensionals
 	 *
 	 * @return The weighted center of those points, as another Dimensional
 	 */
-	public static Dimensional weightedCenter(List<Dimensional> points)
+	public static Dimensional weightedCenter(List<? extends Dimensional> points)
 	{
 		double Cx = 0;
 		double Cy = 0;
