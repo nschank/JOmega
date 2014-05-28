@@ -47,7 +47,7 @@ public final class Point extends Circle
 	@Override
 	public Optional<Collision> collisionWith(Collidable other)
 	{
-		return inverseOf(other.collisionWithPoint(this));
+		return Collidables.inverseOf(other.collisionWithPoint(this));
 	}
 
 	/**
@@ -114,7 +114,7 @@ public final class Point extends Circle
 	@Override
 	public Optional<Collision> collisionWithPolygon(Polygon other)
 	{
-		return inverseOf(other.collisionWithPoint(this));
+		return Collidables.inverseOf(other.collisionWithPoint(this));
 	}
 
 	/**
