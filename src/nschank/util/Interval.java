@@ -123,6 +123,11 @@ public class Interval
 		return b.contains(a.getMin()) || b.contains(a.getMax()) || a.contains(b.getMin()) || a.contains(b.getMax());
 	}
 
+	public Interval plus(int delta)
+	{
+		return new Interval(this.min + delta, this.max + delta);
+	}
+
 	public boolean isIntersecting(Interval b)
 	{
 		return intersect(this, b);
