@@ -1,26 +1,31 @@
 package nschank.engn.shape.collide;
 
-import cs195n.Vec2f;
+import nschank.collect.dim.Dimensional;
+import nschank.collect.dim.Point;
+import nschank.collect.dim.Vector;
+import nschank.note.Immutable;
 
 
 /**
- * A Ray used for raycasting. Exists in a World and
- * can identify what things with which it is isColliding, and
- * which thing it collides with first. Immutable.
+ * Created by Nicolas Schank for package nschank.engn.shape.collide
+ * Created on 19 Oct 2013
+ * Last updated on 27 May 2014
  *
- * @author Nicolas Schank
- * @version M2
- * @since 2013 10 19 4:14 PM
+ * A Ray used for raycasting. Has a starting point and a direction (as a Vector) in which the Ray points.
+ *
+ * @author nschank, Brown University
+ * @version 1.3
  */
+@Immutable
 public final class Ray
 {
-	private final Vec2f startLocation;
-	private final Vec2f direction;
+	private final Dimensional startLocation;
+	private final Vector direction;
 
 	/**
 	 * @return The location this ray is originating from
 	 */
-	Vec2f getStartLocation()
+	Dimensional getStartLocation()
 	{
 		return this.startLocation;
 	}
@@ -28,63 +33,66 @@ public final class Ray
 	/**
 	 * @return A vector representing the direction vector of this ray.
 	 */
-	Vec2f getDirection()
+	Vector getDirection()
 	{
 		return this.direction;
 	}
 
 	/**
-	 * @param f
+	 * @param distance
 	 * 		The distance from the starting location
 	 *
-	 * @return A vector representing the point on the Ray the given distance away from the starting location
+	 * @return A location representing the point on the Ray that is the given distance away from the starting location
 	 */
-	public Vec2f getAtDistance(float f)
+	public Dimensional getAtDistance(double distance)
 	{
-		return this.startLocation.plus(this.direction.smult(f));
+		return this.direction.smult(distance).plus(this.startLocation);
 	}
 
 	/**
 	 * @param point
-	 * 		What point vector to project onto this ray.
+	 * 		What point to project onto this ray.
 	 *
 	 * @return Where this point appears on this ray
 	 */
-	Vec2f projectOnto(Vec2f point)
+	public Dimensional projectOnto(Dimensional point)
 	{
-		return point.projectOntoLine(this.startLocation, this.startLocation.plus(this.direction));
+		return new Vector(point).projectOntoLine(this.startLocation, this.direction.plus(this.startLocation));
 	}
 
 	/**
-	 * Creates a single Ray, from a location and direction.
-	 * Direction will be normalized.
+	 * Creates a single Ray, from a location and direction. Direction will be normalized, and as such cannot be of length
+	 * 0.
 	 *
-	 * @param locationalVector
+	 * @param location
+	 * 		What point the Ray originates from.
 	 * @param directionalVector
+	 * 		A Vector pointing in the direction of the Ray
 	 */
-	public Ray(Vec2f locationalVector, Vec2f directionalVector)
+	public Ray(Dimensional location, Vector directionalVector)
 	{
-		this.startLocation = locationalVector;
+		this.startLocation = new Point(location);
 		this.direction = directionalVector.normalized();
 	}
 
 	/**
-	 * Creates a single Ray, from a location and an angle, from the positive x axis, in radians.
+	 * Creates a single Ray from a location and an angle, from the positive x axis, in radians.
 	 *
-	 * @param locationalVector
+	 * @param location
 	 * 		What point the ray originates from.
 	 * @param angle
-	 * 		The angle
+	 * 		The angle of the Ray (in radians from the x axis)
 	 */
-	public Ray(Vec2f locationalVector, float angle)
+	public Ray(Dimensional location, float angle)
 	{
-		this.startLocation = locationalVector;
-		this.direction = Vec2f.fromPolar(angle, 1.0f);
+		this.startLocation = new Point(location);
+		this.direction = Vector.fromPolar(1, angle);
 	}
 
 	@Override
 	public String toString()
 	{
-		return getStartLocation() + " -> " + getDirection();
+		return "Vector{" +
+				this.getStartLocation() + " -> " + this.getDirection() + "}";
 	}
 }
