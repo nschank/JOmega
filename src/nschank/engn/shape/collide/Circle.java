@@ -136,20 +136,10 @@ public class Circle extends PCollidable
 	 *
 	 * @return
 	 */
+	@Override
 	public boolean contains(Dimensional other)
 	{
-		double myX = this.getCenterPosition().getCoordinate(0);
-		double myY = this.getCenterPosition().getCoordinate(1);
-
-		double otherX = other.getCoordinate(0);
-		double otherY = other.getCoordinate(1);
-
-		double diffX = myX - otherX;
-		double diffY = myY - otherY;
-
-		double sqdist = diffX * diffX + diffY*diffY;
-
-		return sqdist < (this.getRadius() * this.getRadius());
+		return Dimensionals.sqdistance(other, this.getCenterPosition()) < (this.getRadius() * this.getRadius());
 	}
 
 	/**
