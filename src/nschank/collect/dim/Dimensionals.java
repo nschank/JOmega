@@ -1,5 +1,9 @@
 package nschank.collect.dim;
 
+import java.util.ArrayList;
+import java.util.List;
+
+
 /**
  * Created by Nicolas Schank for package nschank.collect.dim
  * Created 13 Feb 2014
@@ -44,6 +48,25 @@ public final class Dimensionals
 			}
 		}
 		return closest;
+	}
+
+	/**
+	 * Given a collection of points and a particular dimension, returns a list (ordered one-to-one with the given iterable)
+	 * which contains the coordinates of each of those points within that dimension. If any of the points do not have
+	 * that dimension, an error will likely be thrown.
+	 *
+	 * @param dimensionals
+	 * 		Any collection of {@code Dimensional}s
+	 * @param coordinate
+	 * 		A dimension
+	 * @return All coordinates in that dimension
+	 */
+	public static List<Double> getCoordinate(Iterable<Dimensional> dimensionals, int coordinate)
+	{
+		List<Double> coordinates = new ArrayList<>();
+		for(Dimensional d : dimensionals)
+			coordinates.add(d.getCoordinate(coordinate));
+		return coordinates;
 	}
 
 	/**
