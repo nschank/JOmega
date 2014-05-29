@@ -117,7 +117,7 @@ public class Circle extends AbstractDrawable implements Collidable
 	 * @param other
 	 * 		An Polygon that may be colliding with this object
 	 *
-	 * @return
+	 * @return A Collision between this circle and a Polygon
 	 */
 	@Override
 	public Optional<Collision> collisionWithPolygon(Polygon other)
