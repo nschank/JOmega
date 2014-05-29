@@ -56,16 +56,6 @@ public interface Collidable extends Drawable
 	 */
 	Optional<Collision> collisionWithCircle(Circle other);
 	/**
-	 * Determines how this object should collide with one of the four main Collidable types: a Point. Identical
-	 * to collisionWith, except with the knowledge that the colliding object is an Point.
-	 *
-	 * @param other
-	 * 		An Point that may be colliding with this object
-	 *
-	 * @return A Collision, as would be returned in collisionWith
-	 */
-	Optional<Collision> collisionWithPoint(Point other);
-	/**
 	 * Determines how this object should collide with one of the four main Collidable types: a Polygon. Identical
 	 * to collisionWith, except with the knowledge that the colliding object is an Polygon.
 	 *
@@ -76,9 +66,9 @@ public interface Collidable extends Drawable
 	 */
 	Optional<Collision> collisionWithPolygon(Polygon other);
 	/**
-	 *
 	 * @param point
 	 * 		A point in the same plane as this {@code Collidable}
+	 *
 	 * @return Whether the given {@code point} is within this Collidable
 	 */
 	boolean contains(Dimensional point);
@@ -117,9 +107,9 @@ public interface Collidable extends Drawable
 	double momentOfInertia();
 
 	/**
-	 *
 	 * @param axis
-	 *		An axis over which to project this object
+	 * 		An axis over which to project this object
+	 *
 	 * @return The Interval over which this Dimensional occludes this axis
 	 */
 	Interval projectionOnto(Dimensional axis);

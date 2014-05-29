@@ -241,21 +241,6 @@ public class Polygon extends AbstractDrawable implements Collidable
 
 	/**
 	 * @param other
-	 * 		An Point that may be colliding with this object
-	 *
-	 * @return A Collision between this object and the given Point, if it exists.
-	 */
-	@Override
-	public Optional<Collision> collisionWithPoint(Point other)
-	{
-		Dimensional closest = Dimensionals.closestTo(other.getCenterPosition(), this.points);
-		Vector line = new Vector(other.getCenterPosition()).minus(closest).normalized();
-		if(line.getCoordinate(0) < 0) line = line.smult(-1);
-		return this.collisionAlongAxes(this.axes(), NLists.of(line), other);
-	}
-
-	/**
-	 * @param other
 	 * 		An Polygon that may be colliding with this object
 	 *
 	 * @return A Collision between this object and the given Polygon, if it exists.
@@ -270,7 +255,8 @@ public class Polygon extends AbstractDrawable implements Collidable
 
 	/**
 	 * @param other
-	 *		A point within the same plane as this shape
+	 * 		A point within the same plane as this shape
+	 *
 	 * @return Whether {@code other} is inside this shape
 	 */
 	@Override
@@ -461,7 +447,8 @@ public class Polygon extends AbstractDrawable implements Collidable
 
 	/**
 	 * @param axis
-	 *		An axis onto which to project this {@code Polygon}
+	 * 		An axis onto which to project this {@code Polygon}
+	 *
 	 * @return The Interval along this axis along which this {@code Polygon} falls
 	 */
 	@Override
@@ -474,6 +461,7 @@ public class Polygon extends AbstractDrawable implements Collidable
 
 	/**
 	 * Rotates this {@code Polygon} {@code theta} radians.
+	 *
 	 * @param theta
 	 * 		A number of radians to rotate this Polygon counter-clockwise
 	 */

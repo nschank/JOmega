@@ -3,6 +3,7 @@ package nschank.engn.shape.collide;
 import com.google.common.base.Optional;
 import nschank.collect.dim.Dimensional;
 import nschank.collect.dim.Dimensionals;
+import nschank.collect.dim.Point;
 import nschank.collect.dim.Vector;
 import nschank.engn.shape.AbstractDrawable;
 import nschank.util.Interval;
@@ -73,8 +74,7 @@ public class Circle extends AbstractDrawable implements Collidable
 		if(Dimensionals.sqdistance(new Vector(clampedX, clampedY), this.getCenterPosition()) < (this.getRadius() * this
 				.getRadius()))
 		{
-			Collision collision = new DefaultCollision(new nschank.collect.dim.Point(clampedX, clampedY),
-					this.mtvFromAAB(other));
+			Collision collision = new DefaultCollision(new Point(clampedX, clampedY), this.mtvFromAAB(other));
 			return Optional.of(collision);
 		}
 		return Optional.absent();
@@ -99,18 +99,6 @@ public class Circle extends AbstractDrawable implements Collidable
 			return Optional.of(collision);
 		}
 		return Optional.absent();
-	}
-
-	/**
-	 * @param other
-	 * 		An Point that may be colliding with this object
-	 *
-	 * @return A Collision between this circle and another point.
-	 */
-	@Override
-	public Optional<Collision> collisionWithPoint(Point other)
-	{
-		return this.collisionWithCircle(other);
 	}
 
 	/**
@@ -256,7 +244,7 @@ public class Circle extends AbstractDrawable implements Collidable
 					this.getCenterPosition().getCoordinate(1));
 			double clampedY = Math.min(minYa, minYb);
 
-			return this.mtvFromCircle(new Point(clampedX, clampedY));
+			return this.mtvFromCircle(new Circle(new Point(clampedX, clampedY), 0, Color.BLACK));
 		}
 	}
 

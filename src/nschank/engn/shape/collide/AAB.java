@@ -111,19 +111,8 @@ public class AAB extends Polygon
 
 	/**
 	 * @param other
-	 * 		An Point that may be colliding with this object
+	 * 		A point in the same plane as this AAB
 	 *
-	 * @return The Collision between this object and a point
-	 */
-	@Override
-	public Optional<Collision> collisionWithPoint(Point other)
-	{
-		return Collidables.inverseOf(other.collisionWithAAB(this));
-	}
-
-	/**
-	 * @param other
-	 *		A point in the same plane as this AAB
 	 * @return Whether ot not {@code other} is inside this AAB
 	 */
 	@Override
@@ -250,6 +239,7 @@ public class AAB extends Polygon
 
 	/**
 	 * Does nothing.
+	 *
 	 * @param f
 	 * 		Unused
 	 */
