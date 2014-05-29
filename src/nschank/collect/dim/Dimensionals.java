@@ -108,10 +108,23 @@ public final class Dimensionals
 		return Math.sqrt(sqdistance(a, b));
 	}
 
+	/**
+	 * Finds a line perpendicular to the given line.
+	 *
+	 * @param line
+	 * 		Any line/axis, defined by a Dimensional and the origin
+	 *
+	 * @return A Dimensional perpendicular to it
+	 */
+	public static Dimensional perpendicularTo(Dimensional line)
+	{
+		return new Point(line.getCoordinate(1), -line.getCoordinate(0));
+	}
+
+
 	/*
 	todo expand to other dimensions, if that makes sense
 	 */
-
 	/**
 	 * Projects a given collection of points onto a particular axis. The DefaultInterval is along the x axis with only one
 	 * exception: if the axis is vertical. Only intended to work in 2D.
