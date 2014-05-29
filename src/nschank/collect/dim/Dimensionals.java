@@ -19,6 +19,9 @@ import java.util.List;
  */
 public final class Dimensionals
 {
+	/**
+	 * Does nothing
+	 */
 	private Dimensionals()
 	{
 		//Utility class
