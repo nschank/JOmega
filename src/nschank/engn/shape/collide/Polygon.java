@@ -1,9 +1,11 @@
 package nschank.engn.shape.collide;
 
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import nschank.collect.dim.Dimensional;
 import nschank.collect.dim.Dimensionals;
 import nschank.collect.dim.Vector;
+import nschank.collect.tuple.Triple;
 import nschank.engn.shape.AbstractDrawable;
 import nschank.util.Interval;
 import nschank.util.Intervals;
@@ -131,75 +133,6 @@ public class Polygon extends AbstractDrawable implements Collidable
 		return myAxes;
 	}
 
-//	/**
-//	 * TODO
-//	 *
-//	 * @param shapeAxes1
-//	 * @param shapeAxes2
-//	 * @param other
-//	 *
-//	 * @return
-//	 */
-//	Optional<Collision> collisionAlongAxes(Iterable<? extends Dimensional> shapeAxes1, Iterable<? extends Dimensional> shapeAxes2, PCollidable other)
-//	{
-//		Optional<Pair<Dimensional, Double>> shape = this.collisionAlongShapeAxes(shapeAxes1, shapeAxes2, other);
-//		if(shape.isPresent()) return this.minimumCollisionFrom(shape.get(), other);
-//		return Optional.absent();
-//	}
-//
-//	/**
-//	 * TODO
-//	 *
-//	 * @param shapeAxes1
-//	 * @param shapeAxes2
-//	 * @param other
-//	 *
-//	 * @return
-//	 */
-//	Optional<Pair<Dimensional, Double>> collisionAlongShapeAxes(Iterable<? extends Dimensional> shapeAxes1, Iterable<? extends Dimensional> shapeAxes2, PCollidable other)
-//	{
-//		Optional<Dimensional> minimumAxis = Optional.absent();
-//		Optional<Double> minimumAxisExchange = Optional.absent();
-//
-//		for(Dimensional axis : shapeAxes1)
-//		{
-//			PointToFloat use = new PointToFloat(nschank.collect.dim.Point.ZERO_2D, axis);
-//
-//			DefaultInterval projection = this.projectionOnto(axis, use);
-//			DefaultInterval otherProjection = other.projectionOnto(axis, use);
-//
-//			if(!projection.isIntersecting(otherProjection)) return Optional.absent();
-//
-//			double minimumExchange = projection.getMinimumTranslation(otherProjection);
-//
-//			if(!minimumAxisExchange.isPresent() || (Math.abs(minimumAxisExchange.get()) > Math.abs(minimumExchange)))
-//			{
-//				minimumAxis = Optional.of(axis);
-//				minimumAxisExchange = Optional.of(minimumExchange);
-//			}
-//		}
-//
-//		for(Dimensional axis : shapeAxes2)
-//		{
-//			PointToFloat use = new PointToFloat(nschank.collect.dim.Point.ZERO_2D, axis);
-//
-//			DefaultInterval projection = this.projectionOnto(axis, use);
-//			DefaultInterval otherProjection = other.projectionOnto(axis, use);
-//
-//			if(!projection.isIntersecting(otherProjection)) return Optional.absent();
-//
-//			double minimumExchange = projection.getMinimumTranslation(otherProjection);
-//
-//			if(!minimumAxisExchange.isPresent() || (Math.abs(minimumAxisExchange.get()) > Math.abs(minimumExchange)))
-//			{
-//				minimumAxis = Optional.of(axis);
-//				minimumAxisExchange = Optional.of(minimumExchange);
-//			}
-//		}
-//
-//		return Optional.of(Pair.tuple(minimumAxis.get(), minimumAxisExchange.get()));
-//	}
-
 	/**
 	 * @param other
 	 * 		Another object which may be colliding with this one.
@@ -221,7 +154,7 @@ public class Polygon extends AbstractDrawable implements Collidable
 	@Override
 	public Optional<Collision> collisionWithAAB(AAB other)
 	{
-		return this.collisionAlongAxes(this.axes(), other.axes(), other);
+		return this.collisionWithPolygon(other);
 	}
 
 	/**
@@ -235,9 +168,13 @@ public class Polygon extends AbstractDrawable implements Collidable
 	{
 		Dimensional closest = Dimensionals.closestTo(other.getCenterPosition(), this.points);
 		Vector line = new Vector(other.getCenterPosition()).minus(closest).normalized();
-		if(line.getCoordinate(0) < 0) line = line.smult(-1);
+		line.smult(Math.signum(line.getCoordinate(0)));
 
-		return this.collisionAlongAxes(this.axes(), NLists.of(line), other);
+		List<Dimensional> axes = NLists.combineLists(this.axes(), NLists.of(line));
+		List<Triple<Dimensional, Vector, Double>> possibleCollisions = this.possibleCollisions(other, axes);
+		if(possibleCollisions.isEmpty()) return Optional.absent();
+
+		return Optional.of(this.collisionWithTriples(other, possibleCollisions));
 	}
 
 	/**
@@ -249,9 +186,45 @@ public class Polygon extends AbstractDrawable implements Collidable
 	@Override
 	public Optional<Collision> collisionWithPolygon(Polygon other)
 	{
-		if(!this.xInterval().isIntersecting(other.xInterval()) || !this.yInterval().isIntersecting(other.yInterval()))
-			return Optional.absent();
-		return this.collisionAlongAxes(this.axes(), other.axes(), other);
+		List<Dimensional> axes = NLists.combineLists(other.axes(), this.axes());
+		List<Triple<Dimensional, Vector, Double>> possibleCollisions = this.possibleCollisions(other, axes);
+		if(possibleCollisions.isEmpty()) return Optional.absent();
+
+		return Optional.of(this.collisionWithTriples(other, possibleCollisions));
+	}
+
+	/**
+	 * Creates a Collision given the object being Collided with and the triples created by possibleCollisions():
+	 * (axis, mtv, collision)
+	 * @param other
+	 * 		Another object which may be colliding with this one.
+	 * @param possibleCollisions
+	 * 		Triples created by possibleCollisions() of the form <Axis, MTV, Interval Ccollision></Axis,>
+	 * @return The best Collision possible between this object and the other.
+	 */
+	public Collision collisionWithTriples(final Collidable other,
+										  final Iterable<Triple<Dimensional, Vector, Double>> possibleCollisions)
+	{
+		Triple<Dimensional, Vector, Double> bestPair = NLists
+				.min(possibleCollisions, new Function<Triple<Dimensional, Vector, Double>, Double>()
+				{
+					@Override
+					public Double apply(final Triple<Dimensional, Vector, Double> pair)
+					{
+						return pair.getB().mag2();
+					}
+				});
+		Vector shortestMTV = bestPair.getB();
+		Dimensional shortestAxis = bestPair.getA();
+		Dimensional perpendicularAxis = Dimensionals.perpendicularTo(shortestAxis);
+
+		List<Dimensional> pairOfAxes = NLists.of(shortestAxis, perpendicularAxis);
+		List<Interval> coordinateIntervals = NLists
+				.of(this.xInterval().and(other.xInterval()), this.yInterval().and(other.xInterval()));
+		int use = shortestAxis.getCoordinate(0) == 0 ? 1 : 0;
+		int xuse = (use + 1) % 2;
+
+		//TODO
 	}
 
 	/**
@@ -443,6 +416,38 @@ public class Polygon extends AbstractDrawable implements Collidable
 	public double momentOfInertia()
 	{
 		return this.momentOfInertia;
+	}
+
+	/**
+	 * Given an object with which this Polygon is colliding, and the axes over which the shortest collision may be
+	 * occurring (by Separating Axis Theorem).
+	 *
+	 * @param other
+	 * 		Another object which may be colliding with this one.
+	 * @param axes
+	 * 		All axes, by the Separating Axis Theorem, which are necessary to check for a collision
+	 *
+	 * @return If there is any axis by which there is not a collision, an empty list. Otherwise, a list of tuples which
+	 * contain, in order, the axis being considered; the minimum translation vector for this object along that axis;
+	 * and the value along that axis where the collision is occurring.
+	 */
+	private List<Triple<Dimensional, Vector, Double>> possibleCollisions(final Collidable other,
+																		 final Iterable<Dimensional> axes)
+	{
+		List<Triple<Dimensional, Vector, Double>> collisions = new ArrayList<>();
+		for(Dimensional axis : axes)
+		{
+			Interval mine = this.projectionOnto(axis);
+			Interval theirs = other.projectionOnto(axis);
+
+			if(!mine.isIntersecting(theirs)) return new ArrayList<>();
+
+			Vector norm = new Vector(axis).normalized();
+			Vector mtv = norm.smult(Math.signum(norm.getCoordinate(0)) * mine.getMinimumTranslation(theirs));
+
+			collisions.add(Triple.tuple(axis, mtv, mine.collision(theirs)));
+		}
+		return collisions;
 	}
 
 	/**
