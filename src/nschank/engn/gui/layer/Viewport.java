@@ -61,15 +61,15 @@ public interface Viewport extends Layer
 	 */
 	public void setViewPosition(Dimensional newView);
 	/**
-	 * The Interval over which this Viewport extends.
+	 * The DefaultInterval over which this Viewport extends.
 	 *
-	 * @return An Interval (of the x axis and in game units)
+	 * @return An DefaultInterval (of the x axis and in game units)
 	 */
 	public Interval getXInterval();
 	/**
-	 * The Interval over which this Viewport extends.
+	 * The DefaultInterval over which this Viewport extends.
 	 *
-	 * @return An Interval (of the y axis and in game units)
+	 * @return An DefaultInterval (of the y axis and in game units)
 	 */
 	public Interval getYInterval();
 	/**

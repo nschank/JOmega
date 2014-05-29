@@ -37,7 +37,8 @@ public abstract class RotatingViewport extends AbstractViewport
 	 * @param theta
 	 * 		The angle between a line in the Screen and a line in the in-game location system.
 	 */
-	protected RotatingViewport(Dimensional centerPos, Dimensional size, Dimensional viewPosition, double scale, double theta)
+	protected RotatingViewport(Dimensional centerPos, Dimensional size, Dimensional viewPosition, double scale,
+							   double theta)
 	{
 		super(centerPos, size, viewPosition, scale);
 		this.rotation = theta;
@@ -71,7 +72,8 @@ public abstract class RotatingViewport extends AbstractViewport
 			o.setWidth(originalWidth);
 			o.setHeight(originalHeight);
 		}
-		g.rotate(this.getRotation(), this.getCenterPosition().getCoordinate(0), this.getCenterPosition().getCoordinate(1));
+		g.rotate(this.getRotation(), this.getCenterPosition().getCoordinate(0),
+				this.getCenterPosition().getCoordinate(1));
 		g.setClip(clip);
 	}
 
@@ -99,9 +101,9 @@ public abstract class RotatingViewport extends AbstractViewport
 	public Interval getXInterval()
 	{
 		if(Math.abs(this.getRotation()) < .002) return super.getXInterval();
-		float width = super.getXInterval().width();
-		float height = super.getYInterval().width();
-		float diameter = Math.max(width, height);
+		double width = super.getXInterval().width();
+		double height = super.getYInterval().width();
+		double diameter = Math.max(width, height);
 
 		return super.getXInterval().stretch(diameter * 2.83);
 	}

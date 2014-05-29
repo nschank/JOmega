@@ -5,6 +5,7 @@ import nschank.collect.dim.Point;
 import nschank.collect.dim.Vector;
 import nschank.engn.shape.Drawable;
 import nschank.util.Interval;
+import nschank.util.Intervals;
 
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
@@ -71,10 +72,10 @@ public abstract class AbstractViewport extends AbstractLayer implements Viewport
 		if(size.getDimensions() != 2) throw new IllegalArgumentException("Size must be a two-dimensional vector.");
 		if(viewPosition.getDimensions() != 2)
 			throw new IllegalArgumentException("View position must be a two-dimensional point.");
-		if(scale > this.closestZoom())
-			throw new IllegalArgumentException("Initial zoom must be further than the closest allowed zoom (" + this.closestZoom() + ").");
-		if(scale < this.furthestZoom())
-			throw new IllegalArgumentException("Initial zoom must be closer than the furthest allowed zoom (" + this.furthestZoom() + ").");
+		if(scale > this.closestZoom()) throw new IllegalArgumentException(
+				"Initial zoom must be further than the closest allowed zoom (" + this.closestZoom() + ").");
+		if(scale < this.furthestZoom()) throw new IllegalArgumentException(
+				"Initial zoom must be closer than the furthest allowed zoom (" + this.furthestZoom() + ").");
 
 		this.centerPos = new Vector(centerPos);
 		this.size = new Point(size);
@@ -313,8 +314,10 @@ public abstract class AbstractViewport extends AbstractLayer implements Viewport
 	 */
 	protected void setIntervals()
 	{
-		this.vX = Interval.about(this.viewPosition.getCoordinate(0), (this.size.getCoordinate(0) / this.getZoom()) + 2.0);
-		this.vY = Interval.about(this.viewPosition.getCoordinate(1), (this.size.getCoordinate(1) / this.getZoom()) + 2.0);
+		this.vX = Intervals
+				.about(this.viewPosition.getCoordinate(0), (this.size.getCoordinate(0) / this.getZoom()) + 2.0);
+		this.vY = Intervals
+				.about(this.viewPosition.getCoordinate(1), (this.size.getCoordinate(1) / this.getZoom()) + 2.0);
 	}
 
 	/**
