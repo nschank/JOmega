@@ -10,12 +10,12 @@ import java.util.List;
 /**
  * Created by Nicolas Schank for package nschank.collect.dim
  * Created 13 Feb 2014
- * Last updated 27 May 2014
+ * Last updated 29 May 2014
  *
  * A Utility class for dealing with Dimensional objects.
  *
  * @author nschank, Brown University
- * @version 2.6
+ * @version 2.7
  */
 public final class Dimensionals
 {
@@ -43,6 +43,25 @@ public final class Dimensionals
 					.getCoordinate(1);
 		}
 		return sum / 2d;
+	}
+
+	/**
+	 * Finds the average of any collection of points. If the collection is empty, returns null.
+	 * @param points
+	 * 		Any collection of points
+	 * @return The arithmetic average of {@code points}
+	 */
+	public static Dimensional average(Iterable<? extends Dimensional> points)
+	{
+		Vector avg = new Vector(0, 0);
+		double num = 0;
+		for(Dimensional d : points)
+		{
+			num++;
+			avg = avg.plus(d);
+		}
+		if(num == 0) return null;
+		return avg.sdiv(num);
 	}
 
 	/**
