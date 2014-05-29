@@ -1,11 +1,9 @@
 package nschank.engn.shape.collide;
 
-import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import nschank.collect.dim.Dimensional;
 import nschank.collect.dim.Dimensionals;
 import nschank.collect.dim.Vector;
-import nschank.collect.tuple.Triple;
 import nschank.engn.shape.AbstractDrawable;
 import nschank.util.Interval;
 import nschank.util.Intervals;
@@ -21,6 +19,7 @@ import java.util.List;
 
 
 //TODO: update with a Convex Hull
+//TODO: furthest point for quicker contain
 
 /**
  * Created by Nicolas Schank for package nschank.engn.shape.collide
@@ -33,7 +32,7 @@ import java.util.List;
  * the method isConcave() is provided for further error checking.
  *
  * @author nschank, Brown University
- * @version 3.3
+ * @version 3.4
  */
 public class Polygon extends AbstractDrawable implements Collidable
 {
@@ -117,7 +116,7 @@ public class Polygon extends AbstractDrawable implements Collidable
 	/**
 	 * @return The axes this Polygon uses under the separating axis theorem
 	 */
-	protected List<? extends Dimensional> axes()
+	protected List<Dimensional> axes()
 	{
 		List<Dimensional> myAxes = new ArrayList<>();
 		for(int i = -1; i < (this.points.size() - 1); i++)
@@ -170,11 +169,19 @@ public class Polygon extends AbstractDrawable implements Collidable
 		Vector line = new Vector(other.getCenterPosition()).minus(closest).normalized();
 		line.smult(Math.signum(line.getCoordinate(0)));
 
-		List<Dimensional> axes = NLists.combineLists(this.axes(), NLists.of(line));
-		List<Triple<Dimensional, Vector, Double>> possibleCollisions = this.possibleCollisions(other, axes);
-		if(possibleCollisions.isEmpty()) return Optional.absent();
+		List<Dimensional> axes = NLists.combineLists(this.axes(), NLists.of((Dimensional) line));
+		Vector mtv = this.shortestMTV(other, axes);
+		if(mtv.isZero()) return Optional.absent();
 
-		return Optional.of(this.collisionWithTriples(other, possibleCollisions));
+		Dimensional circlePoint = mtv.normalized().smult(-other.getRadius()).plus(this.getCenterPosition());
+		List<Dimensional> intersectPoints = NLists.combineLists(Collidables.contained(this, NLists.of(circlePoint)),
+				Collidables.contained(other, this.points));
+		Dimensional collisionPoint = Dimensionals.average(intersectPoints);
+		if(collisionPoint == null) return Optional.absent();
+
+		Collision coll = new DefaultCollision(collisionPoint, mtv);
+
+		return Optional.of(coll);
 	}
 
 	/**
@@ -186,45 +193,22 @@ public class Polygon extends AbstractDrawable implements Collidable
 	@Override
 	public Optional<Collision> collisionWithPolygon(Polygon other)
 	{
-		List<Dimensional> axes = NLists.combineLists(other.axes(), this.axes());
-		List<Triple<Dimensional, Vector, Double>> possibleCollisions = this.possibleCollisions(other, axes);
-		if(possibleCollisions.isEmpty()) return Optional.absent();
+		Dimensional closest = Dimensionals.closestTo(other.getCenterPosition(), this.points);
+		Vector line = new Vector(other.getCenterPosition()).minus(closest).normalized();
+		line.smult(Math.signum(line.getCoordinate(0)));
 
-		return Optional.of(this.collisionWithTriples(other, possibleCollisions));
-	}
+		List<Dimensional> axes = NLists.combineLists(this.axes(), NLists.of((Dimensional) line));
+		Vector mtv = this.shortestMTV(other, axes);
+		if(mtv.isZero()) return Optional.absent();
 
-	/**
-	 * Creates a Collision given the object being Collided with and the triples created by possibleCollisions():
-	 * (axis, mtv, collision)
-	 * @param other
-	 * 		Another object which may be colliding with this one.
-	 * @param possibleCollisions
-	 * 		Triples created by possibleCollisions() of the form <Axis, MTV, Interval Ccollision></Axis,>
-	 * @return The best Collision possible between this object and the other.
-	 */
-	public Collision collisionWithTriples(final Collidable other,
-										  final Iterable<Triple<Dimensional, Vector, Double>> possibleCollisions)
-	{
-		Triple<Dimensional, Vector, Double> bestPair = NLists
-				.min(possibleCollisions, new Function<Triple<Dimensional, Vector, Double>, Double>()
-				{
-					@Override
-					public Double apply(final Triple<Dimensional, Vector, Double> pair)
-					{
-						return pair.getB().mag2();
-					}
-				});
-		Vector shortestMTV = bestPair.getB();
-		Dimensional shortestAxis = bestPair.getA();
-		Dimensional perpendicularAxis = Dimensionals.perpendicularTo(shortestAxis);
+		List<Dimensional> intersectPoints = NLists
+				.combineLists(Collidables.contained(this, other.points), Collidables.contained(other, this.points));
+		Dimensional collisionPoint = Dimensionals.average(intersectPoints);
+		if(collisionPoint == null) return Optional.absent();
 
-		List<Dimensional> pairOfAxes = NLists.of(shortestAxis, perpendicularAxis);
-		List<Interval> coordinateIntervals = NLists
-				.of(this.xInterval().and(other.xInterval()), this.yInterval().and(other.xInterval()));
-		int use = shortestAxis.getCoordinate(0) == 0 ? 1 : 0;
-		int xuse = (use + 1) % 2;
+		Collision coll = new DefaultCollision(collisionPoint, mtv);
 
-		//TODO
+		return Optional.of(coll);
 	}
 
 	/**
@@ -420,34 +404,38 @@ public class Polygon extends AbstractDrawable implements Collidable
 
 	/**
 	 * Given an object with which this Polygon is colliding, and the axes over which the shortest collision may be
-	 * occurring (by Separating Axis Theorem).
+	 * occurring (by Separating Axis Theorem), finds the shortest MTV among those axes. If there is no collision, returns
+	 * a zero vector.
 	 *
 	 * @param other
 	 * 		Another object which may be colliding with this one.
 	 * @param axes
 	 * 		All axes, by the Separating Axis Theorem, which are necessary to check for a collision
 	 *
-	 * @return If there is any axis by which there is not a collision, an empty list. Otherwise, a list of tuples which
-	 * contain, in order, the axis being considered; the minimum translation vector for this object along that axis;
-	 * and the value along that axis where the collision is occurring.
+	 * @return The minimal Vector when, added to this Polygon, the Collision will no longer be present.
 	 */
-	private List<Triple<Dimensional, Vector, Double>> possibleCollisions(final Collidable other,
-																		 final Iterable<Dimensional> axes)
+	private Vector shortestMTV(final Collidable other, final Iterable<Dimensional> axes)
 	{
-		List<Triple<Dimensional, Vector, Double>> collisions = new ArrayList<>();
+		Vector shortest = null;
+		double mag2 = -1;
+
 		for(Dimensional axis : axes)
 		{
 			Interval mine = this.projectionOnto(axis);
 			Interval theirs = other.projectionOnto(axis);
 
-			if(!mine.isIntersecting(theirs)) return new ArrayList<>();
+			if(!mine.isIntersecting(theirs)) return Vector.ZERO_2D;
 
 			Vector norm = new Vector(axis).normalized();
 			Vector mtv = norm.smult(Math.signum(norm.getCoordinate(0)) * mine.getMinimumTranslation(theirs));
 
-			collisions.add(Triple.tuple(axis, mtv, mine.collision(theirs)));
+			if(shortest == null || mtv.mag2() < mag2)
+			{
+				shortest = mtv;
+				mag2 = mtv.mag2();
+			}
 		}
-		return collisions;
+		return shortest;
 	}
 
 	/**
