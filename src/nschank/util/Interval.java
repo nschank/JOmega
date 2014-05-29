@@ -1,148 +1,110 @@
 package nschank.util;
 
-import com.google.common.base.Function;
-import nschank.note.Immutable;
-
-
 /**
- * Tou1
+ * Created by Nicolas Schank for package nschank.util;
+ * Created on 28 May 2014
+ * Last updated on 28 May 2014
  *
- * @author Nicolas Schank
- * @version 2013 09 29
- * @since 2013 09 29 8:19 PM
+ * An Interval that extends between two numbers.
+ *
+ * @author nschank, Brown University
+ * @version 1.1
  */
-@Immutable
-public class Interval
+public interface Interval
 {
-	private final double min;
-	private final double max;
-
-	public double collision(Interval other)
-	{
-		double shiftLeft = other.min - max;
-		double shiftRight = other.max - min;
-		if(Math.abs(shiftLeft) < Math.abs(shiftRight)) return max + (shiftLeft / 2f);
-		else return min + (shiftRight / 2f);
-	}
-
-	public double getMin()
-	{
-		return min;
-	}
-
-	public double getMax()
-	{
-		return max;
-	}
-
-	public double getMinimumTranslation(Interval other)
-	{
-		double shiftLeft = other.min - max;
-		double shiftRight = other.max - min;
-		if(Math.abs(shiftLeft) < Math.abs(shiftRight)) return shiftLeft;
-		else return shiftRight;
-	}
-
-	public static boolean within(double minimum, double maximum, double between)
-	{
-		return (minimum <= between) && (maximum >= between);
-	}
-
-	public Interval stretch(double diameter)
-	{
-		return Interval.about(this.center(), diameter);
-	}
-
-	public double center()
-	{
-		return this.getMin() + (this.width() / 2f);
-	}
-
-	public double width()
-	{
-		return this.getMax() - this.getMin();
-	}
-
-	public boolean contains(double is)
-	{
-		return (min <= is) && (is <= max);
-	}
-
-	public Interval(double min, double max)
-	{
-		this.min = Math.min(min, max);
-		this.max = Math.max(min, max);
-	}
-
-	public static Interval about(double mid, double width)
-	{
-		return new Interval(mid - (width / 2f), mid + (width / 2f));
-	}
-
-	public Interval and(Interval b)
-	{
-		return and(this, b);
-	}
-
-	public Interval and(double d)
-	{
-		if(d >= this.max) return new Interval(this.min, d);
-		if(d <= this.min) return new Interval(d, this.max);
-		return this;
-	}
-
-	public static Interval and(Interval a, Interval b)
-	{
-		return new Interval(Math.min(a.getMin(), b.getMin()), Math.max(b.getMax(), a.getMax()));
-	}
-
-	public static Interval of(double min, double max)
-	{
-		return new Interval(min, max);
-	}
-
-	public static Interval from(Iterable<Double> anything)
-	{
-		Interval startInterval = null;
-		for(Double t : anything)
-		{
-			if(startInterval == null) startInterval = Interval.about(t, 0);
-			else startInterval = startInterval.and(Interval.about(t, 0));
-		}
-		if(startInterval == null) throw new IllegalStateException("Cannot make an interval from nothing.");
-		return startInterval;
-	}
-
-	public static <T> Interval from(Iterable<T> anything, Function<T, Double> todouble)
-	{
-		Interval startInterval = null;
-		for(T t : anything)
-		{
-			if(startInterval == null) startInterval = Interval.about(todouble.apply(t), 0);
-			else startInterval = startInterval.and(Interval.about(todouble.apply(t), 0));
-		}
-		if(startInterval == null) throw new IllegalArgumentException("Cannot make an interval from nothing.");
-		return startInterval;
-	}
-
-	public static boolean intersect(Interval a, Interval b)
-	{
-		return b.contains(a.getMin()) || b.contains(a.getMax()) || a.contains(b.getMin()) || a.contains(b.getMax());
-	}
-
-	public Interval plus(double delta)
-	{
-		return new Interval(this.min + delta, this.max + delta);
-	}
-
-	public boolean isIntersecting(Interval b)
-	{
-		return intersect(this, b);
-	}
-
-	@Override
-	public String toString()
-	{
-		return (new StringBuilder("(").append(min).append(',').append(max).append(')')).toString();
-	}
+	/**
+	 * Finds the union of this Interval and another Interval. It must contain everything in both Intervals, and possibly
+	 * other things between the two Intervals.
+	 *
+	 * @param i
+	 * 		Any other Interval
+	 *
+	 * @return The union of these Intervals, including numbers between the two Intervals
+	 */
+	public Interval and(Interval i);
+	/**
+	 * Finds the union of this Interval and a number, which must contain this entire Interval extended to include the
+	 * given number.
+	 *
+	 * @param d
+	 * 		Any number
+	 *
+	 * @return An Interval strictly larger or equal to the starting Interval
+	 */
+	public Interval and(double d);
+	/**
+	 * The midpoint of this Interval
+	 *
+	 * @return The average of the minimum and the maximum
+	 */
+	public double center();
+	/**
+	 * The 'collision' between two Intervals: the midpoint of their intersection, if one exists.
+	 *
+	 * @param i
+	 * 		Any other Interval
+	 *
+	 * @return The midpoint of the intersection of the Interval
+	 */
+	public double collision(Interval i);
+	/**
+	 * Whether the given number is within this Interval.
+	 *
+	 * @param d
+	 * 		Any number
+	 *
+	 * @return Whether this number is in this Interval
+	 */
+	public boolean contains(double d);
+	/**
+	 * @return The maximum number which is contained in this Interval
+	 */
+	public double getMax();
+	/**
+	 * @return The minimum number which is contained in this Interval
+	 */
+	public double getMin();
+	/**
+	 * The minimum (by absolute value) amount which, if added to this Interval, will make it so that the two Intervals
+	 * now share a minimum and maximum and do not otherwise intersect.
+	 *
+	 * @param i
+	 * 		An interval intersecting with this
+	 *
+	 * @return A minimum translation to remove the intersection of these two Intervals
+	 */
+	public double getMinimumTranslation(Interval i);
+	/**
+	 * Whether there exists any number such that it is contained in both Intervals
+	 *
+	 * @param i
+	 * 		Any other Interval
+	 *
+	 * @return the existence of a number which both Intervals contain
+	 */
+	public boolean isIntersecting(Interval i);
+	/**
+	 * Translates this interval by a specified amount
+	 *
+	 * @param delta
+	 * 		An amount by which to move this Interval
+	 *
+	 * @return A translated Interval of the same width as this one
+	 */
+	public Interval plus(double delta);
+	/**
+	 * Creates an interval with the same centre-point as the current Interval, but of a different width.
+	 *
+	 * @param diameter
+	 * 		The new width of the created Interval
+	 *
+	 * @return A stretched Interval
+	 */
+	public Interval stretch(double diameter);
+	/**
+	 * The difference between the maximum and minimum of this Interval
+	 *
+	 * @return the width of this Interval
+	 */
+	public double width();
 }
