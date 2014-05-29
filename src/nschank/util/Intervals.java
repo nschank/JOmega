@@ -11,7 +11,7 @@ import com.google.common.base.Function;
  * A Utility class for dealing with Intervals.
  *
  * @author nschank, Brown University
- * @version 1.1
+ * @version 1.2
  */
 public final class Intervals
 {
@@ -81,5 +81,23 @@ public final class Intervals
 		}
 		if(startInterval == null) throw new IllegalArgumentException("Cannot make an interval from nothing.");
 		return startInterval;
+	}
+
+	/**
+	 * Whether {@code between} is between {@code sideone} and {@code sidetwo}.
+	 *
+	 * @param sideone
+	 * 		Any number
+	 * @param sidetwo
+	 * 		Any other number
+	 * @param between
+	 * 		Any third number
+	 *
+	 * @return Whether the third number is between the other two
+	 */
+	public static boolean within(double sideone, double sidetwo, double between)
+	{
+		return Math.signum(between - sideone) == Math.signum(between - sidetwo) || sideone == between
+				|| sidetwo == between;
 	}
 }
