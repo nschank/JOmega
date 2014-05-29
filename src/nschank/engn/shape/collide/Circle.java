@@ -122,7 +122,7 @@ public class Circle extends AbstractDrawable implements Collidable
 	@Override
 	public boolean contains(Dimensional other)
 	{
-		return Dimensionals.sqdistance(other, this.getCenterPosition()) <= (this.getRadius() * this.getRadius());
+		return Dimensionals.sqdistance(other, this.getCenterPosition()) < (this.getRadius() * this.getRadius());
 	}
 
 	/**
