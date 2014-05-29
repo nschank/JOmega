@@ -14,20 +14,27 @@ import java.util.List;
 /**
  * Created by Nicolas Schank for package nschank.engn.shape.collide
  * Created on 28 Sep 2013
- * Last updated on 27 May 2014
+ * Last updated on 28 May 2014
  *
- *
+ * An Axis Aligned Box is a subset of Polygons satisfying two invariants: they are boxes (rectangles), and they are not
+ * rotatable.
  *
  * @author nschank, Brown University
- * @version 3.5
+ * @version 4.1
  */
 public class AAB extends Polygon
 {
 	/**
+	 * Creates an AAB with the given center-point, the given width and height, and the given color.
+	 *
 	 * @param location
+	 * 		The center point of this AAB
 	 * @param width
+	 * 		The width of this AAB
 	 * @param height
+	 * 		The height of this AAB
 	 * @param c
+	 * 		The Color of this AAB
 	 */
 	public AAB(Dimensional location, double width, double height, Color c)
 	{
@@ -35,19 +42,28 @@ public class AAB extends Polygon
 	}
 
 	/**
+	 * Creates an AAB with the given let, right, top, and bottom edges. The four points of this AAB will be:
+	 * (left,top),(right,top),(right,bottom),(left,bottom)
+	 *
 	 * @param left
+	 * 		The left border of the AAB
 	 * @param right
+	 * 		The right border of the AAB
 	 * @param top
+	 * 		The top border of the AAB
 	 * @param bottom
+	 * 		The bottom border of the AAB
 	 * @param c
+	 * 		The Color of this AAB
 	 */
 	public AAB(double left, double right, double top, double bottom, Color c)
 	{
-		super(new Vector(left + ((right - left) / 2d), top + ((bottom - top) / 2d)), right - left, bottom - top, c, new Vector(-1, -1), new Vector(1, -1), new Vector(1, 1), new Vector(-1, 1));
+		super(new Vector(left + ((right - left) / 2d), top + ((bottom - top) / 2d)), right - left, bottom - top, c,
+				new Vector(-1, -1), new Vector(1, -1), new Vector(1, 1), new Vector(-1, 1));
 	}
 
 	/**
-	 * @return
+	 * @return The two axes of this AAB: the x and y axes
 	 */
 	@Override
 	protected List<? extends Dimensional> axes()
@@ -56,11 +72,10 @@ public class AAB extends Polygon
 	}
 
 	/**
-	 *
 	 * @param other
 	 * 		Another object which may be colliding with this one.
 	 *
-	 * @return
+	 * @return The Collision between this object and another object
 	 */
 	@Override
 	public Optional<Collision> collisionWith(Collidable other)
@@ -69,11 +84,10 @@ public class AAB extends Polygon
 	}
 
 	/**
-	 *
 	 * @param other
 	 * 		An AAB that may be colliding with this object
 	 *
-	 * @return
+	 * @return The Collision between this object and another AAB
 	 */
 	@Override
 	public Optional<Collision> collisionWithAAB(AAB other)
@@ -84,11 +98,10 @@ public class AAB extends Polygon
 	}
 
 	/**
-	 *
 	 * @param other
 	 * 		An Circle that may be colliding with this object
 	 *
-	 * @return
+	 * @return The Collision between this object and a circle
 	 */
 	@Override
 	public Optional<Collision> collisionWithCircle(Circle other)
@@ -97,11 +110,10 @@ public class AAB extends Polygon
 	}
 
 	/**
-	 *
 	 * @param other
 	 * 		An Point that may be colliding with this object
 	 *
-	 * @return
+	 * @return The Collision between this object and a point
 	 */
 	@Override
 	public Optional<Collision> collisionWithPoint(Point other)
@@ -110,19 +122,19 @@ public class AAB extends Polygon
 	}
 
 	/**
-	 *
 	 * @param other
-	 *
-	 * @return
+	 *		A point in the same plane as this AAB
+	 * @return Whether ot not {@code other} is inside this AAB
 	 */
 	@Override
 	public boolean contains(Dimensional other)
 	{
-		return Interval.within(this.getMinX(), this.getMaxX(), other.getCoordinate(0)) && Interval.within(this.getMinY(), this.getMaxY(), other.getCoordinate(1));
+		return Interval.within(this.leftBorder(), this.rightBorder(), other.getCoordinate(0)) && Interval
+				.within(this.bottomBorder(), this.topBorder(), other.getCoordinate(1));
 	}
 
 	/**
-	 * @return
+	 * @return An exact copy of this AAB
 	 */
 	@Override
 	public Collidable copy()
@@ -134,7 +146,7 @@ public class AAB extends Polygon
 	 * @param r
 	 * 		A Ray in the same x-y coordinate plane as this object, which may be pointed to this object
 	 *
-	 * @return
+	 * @return The distance along this ray where this AAB is located, if the ray intersects it.
 	 */
 	@Override
 	public Optional<Double> distanceAlong(Ray r)
@@ -146,8 +158,9 @@ public class AAB extends Polygon
 			Vector start = new Vector(this.points.get((this.points.size() + i) % this.points.size()));
 			Vector end = new Vector(this.points.get((this.points.size() + i + 1) % this.points.size()));
 			Vector perp = new Vector(start.minus(end).getCoordinate(1), end.minus(start).getCoordinate(0));
-			if((((start.minus(r.getStartLocation())).crossProduct(r.getDirection()).getCoordinate(2) * (end.minus(r.getStartLocation()).crossProduct(r.getDirection()).getCoordinate(2))) > 0) || (r.getDirection().dotProduct(perp) == 0))
-				continue;
+			if((((start.minus(r.getStartLocation())).crossProduct(r.getDirection()).getCoordinate(2) * (end
+					.minus(r.getStartLocation()).crossProduct(r.getDirection()).getCoordinate(2))) > 0) || (
+					r.getDirection().dotProduct(perp) == 0)) continue;
 
 			double collision = end.minus(r.getStartLocation()).dotProduct(perp) / r.getDirection().dotProduct(perp);
 			if((collision > 0) && ((shortestCollision < 0) || (shortestCollision > collision)))
@@ -160,80 +173,85 @@ public class AAB extends Polygon
 
 	/**
 	 * @param g
+	 * 		The Graphics object on which to draw this AAB
 	 */
 	@Override
 	public void draw(Graphics2D g)
 	{
 		g.setColor(this.getColor());
-		g.fillRect((int) (this.getCenterPosition().getCoordinate(0) - (this.getWidth() / 2f)), (int) (this.getCenterPosition().getCoordinate(1) - (this.getHeight() / 2f)), (int) this.getWidth(), (int) this.getHeight());
+		g.fillRect((int) (this.getCenterPosition().getCoordinate(0) - (this.getWidth() / 2f)),
+				(int) (this.getCenterPosition().getCoordinate(1) - (this.getHeight() / 2f)), (int) this.getWidth(),
+				(int) this.getHeight());
 	}
 
 	/**
-	 *
-	 * @return
+	 * @return The right border of this AAB
 	 */
-	public double getMaxX()
+	public double rightBorder()
 	{
 		return this.getCenterPosition().getCoordinate(0) + (this.getWidth() / 2);
 	}
 
 	/**
-	 *
-	 * @return
+	 * @return The top border of this AAB
 	 */
-	public double getMaxY()
+	public double topBorder()
 	{
 		return this.getCenterPosition().getCoordinate(1) + (this.getHeight() / 2);
 	}
 
 	/**
-	 *
-	 * @return
+	 * @return The left border of this AAB
 	 */
-	public double getMinX()
+	public double leftBorder()
 	{
 		return this.getCenterPosition().getCoordinate(0) - (this.getWidth() / 2);
 	}
 
 	/**
-	 *
-	 * @return
+	 * @return The bottom border of this AAB
 	 */
-	public double getMinY()
+	public double bottomBorder()
 	{
 		return this.getCenterPosition().getCoordinate(1) - (this.getHeight() / 2);
 	}
 
 	/**
-	 * @return
+	 * AAB's cannot be rotated, so rotation is always 0
+	 *
+	 * @return 0
 	 */
 	@Override
 	public double getRotation()
 	{
-		return 0.0f;
+		return 0;
 	}
 
 	/**
-	 * @param f
+	 * AAB cannot be rotated, so this does nothing.
+	 *
+	 * @param theta
+	 * 		Unused
 	 */
 	@Override
-	public void setRotation(double f)
+	public void setRotation(double theta)
 	{
 		//Do nothing
 	}
 
 	/**
-	 * @return
+	 * @return The mass moment of inertia of this AAB
 	 */
 	@Override
 	public double momentOfInertia()
 	{
-		return 0.0f;
+		return (this.getHeight() * this.getHeight() + this.getWidth() * this.getWidth()) / 12d;
 	}
 
 	/**
-	 *
+	 * Does nothing.
 	 * @param f
+	 * 		Unused
 	 */
 	@Override
 	public void rotate(double f)
@@ -242,18 +260,17 @@ public class AAB extends Polygon
 	}
 
 	/**
-	 *
-	 * @return
+	 * @return A String representation of this AAB, containing its center position, width, and height.
 	 */
 	@Override
 	public String toString()
 	{
-		return "AAB={" + getCenterPosition() + " with width " + getWidth() + " and height " + getHeight() + '}';
+		return "AAB={" + this.getCenterPosition() + " with width " + this.getWidth() + " and height " + this.getHeight()
+				+ '}';
 	}
 
 	/**
-	 *
-	 * @return
+	 * @return This AAB projected onto the x axis
 	 */
 	@Override
 	public Interval xInterval()
@@ -262,8 +279,7 @@ public class AAB extends Polygon
 	}
 
 	/**
-	 *
-	 * @return
+	 * @return This AAB projected onto the y axis
 	 */
 	@Override
 	public Interval yInterval()
