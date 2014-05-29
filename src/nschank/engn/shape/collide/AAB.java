@@ -3,7 +3,6 @@ package nschank.engn.shape.collide;
 import com.google.common.base.Optional;
 import nschank.collect.dim.Dimensional;
 import nschank.collect.dim.Vector;
-import nschank.util.DefaultInterval;
 import nschank.util.Interval;
 import nschank.util.Intervals;
 import nschank.util.NLists;
@@ -267,7 +266,7 @@ public class AAB extends Polygon
 	@Override
 	public Interval xInterval()
 	{
-		return DefaultInterval.about(this.getCenterPosition().getCoordinate(0), this.getWidth());
+		return Intervals.about(this.getCenterPosition().getCoordinate(0), this.getWidth());
 	}
 
 	/**
@@ -276,6 +275,6 @@ public class AAB extends Polygon
 	@Override
 	public Interval yInterval()
 	{
-		return DefaultInterval.about(this.getCenterPosition().getCoordinate(1), this.getHeight());
+		return Intervals.about(this.getCenterPosition().getCoordinate(1), this.getHeight());
 	}
 }
