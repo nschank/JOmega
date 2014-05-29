@@ -110,7 +110,7 @@ public interface Collidable extends Drawable
 	 * @param axis
 	 * 		An axis over which to project this object
 	 *
-	 * @return The Interval over which this Dimensional occludes this axis
+	 * @return The DefaultInterval over which this Dimensional occludes this axis
 	 */
 	Interval projectionOnto(Dimensional axis);
 

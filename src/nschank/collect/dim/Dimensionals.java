@@ -1,6 +1,7 @@
 package nschank.collect.dim;
 
 import nschank.util.Interval;
+import nschank.util.Intervals;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -109,13 +110,13 @@ public final class Dimensionals
 	 */
 
 	/**
-	 * Projects a given collection of points onto a particular axis. The Interval is along the x axis with only one
+	 * Projects a given collection of points onto a particular axis. The DefaultInterval is along the x axis with only one
 	 * exception: if the axis is vertical. Only intended to work in 2D.
 	 * @param project
 	 * 		A collection of points to project
 	 * @param axis
 	 * 		An axis onto which to project those points
-	 * @return The Interval along that axis within which the points all fall.
+	 * @return The DefaultInterval along that axis within which the points all fall.
 	 * @throws java.lang.IllegalArgumentException
 	 * 		If {@code project} is empty
 	 */
@@ -130,7 +131,7 @@ public final class Dimensionals
 		{
 			Vector toProject = new Vector(d);
 			if(startInterval == null)
-				startInterval = Interval.about(toProject.projectOnto(axis).getCoordinate(coordinate), 0);
+				startInterval = Intervals.about(toProject.projectOnto(axis).getCoordinate(coordinate), 0);
 			else startInterval = startInterval.and(toProject.projectOnto(axis).getCoordinate(coordinate));
 		}
 		if(startInterval == null) throw new IllegalStateException("Cannot make an interval from nothing.");

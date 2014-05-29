@@ -3,6 +3,7 @@ package nschank.engn.shape;
 import nschank.collect.dim.Dimensional;
 import nschank.collect.dim.Point;
 import nschank.util.Interval;
+import nschank.util.Intervals;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -116,7 +117,7 @@ final class NoShape implements Drawable
 	@Override
 	public Interval xInterval()
 	{
-		return Interval.about(0, 0);
+		return Intervals.about(0, 0);
 	}
 
 	/**
@@ -125,7 +126,7 @@ final class NoShape implements Drawable
 	@Override
 	public Interval yInterval()
 	{
-		return Interval.about(0, 0);
+		return Intervals.about(0, 0);
 	}
 
 	/**

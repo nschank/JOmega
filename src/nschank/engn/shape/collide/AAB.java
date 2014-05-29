@@ -3,7 +3,9 @@ package nschank.engn.shape.collide;
 import com.google.common.base.Optional;
 import nschank.collect.dim.Dimensional;
 import nschank.collect.dim.Vector;
+import nschank.util.DefaultInterval;
 import nschank.util.Interval;
+import nschank.util.Intervals;
 import nschank.util.NLists;
 
 import java.awt.Color;
@@ -118,7 +120,7 @@ public class AAB extends Polygon
 	@Override
 	public boolean contains(Dimensional other)
 	{
-		return Interval.within(this.leftBorder(), this.rightBorder(), other.getCoordinate(0)) && Interval
+		return Intervals.within(this.leftBorder(), this.rightBorder(), other.getCoordinate(0)) && Intervals
 				.within(this.bottomBorder(), this.topBorder(), other.getCoordinate(1));
 	}
 
@@ -265,7 +267,7 @@ public class AAB extends Polygon
 	@Override
 	public Interval xInterval()
 	{
-		return Interval.about(this.getCenterPosition().getCoordinate(0), this.getWidth());
+		return DefaultInterval.about(this.getCenterPosition().getCoordinate(0), this.getWidth());
 	}
 
 	/**
@@ -274,6 +276,6 @@ public class AAB extends Polygon
 	@Override
 	public Interval yInterval()
 	{
-		return Interval.about(this.getCenterPosition().getCoordinate(1), this.getHeight());
+		return DefaultInterval.about(this.getCenterPosition().getCoordinate(1), this.getHeight());
 	}
 }

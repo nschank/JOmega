@@ -115,7 +115,8 @@ public class Circle extends AbstractDrawable implements Collidable
 
 	/**
 	 * @param other
-	 *		A point in the same plane as this circle
+	 * 		A point in the same plane as this circle
+	 *
 	 * @return Whether or not this point is inside this {@code Circle}
 	 */
 	@Override
@@ -208,7 +209,8 @@ public class Circle extends AbstractDrawable implements Collidable
 
 	/**
 	 * @param other
-	 *		An AAB that may be colliding with this object
+	 * 		An AAB that may be colliding with this object
+	 *
 	 * @return A Vector that, if this Circle followed, would displace this Circle completely from outside this AAB
 	 */
 	private Vector mtvFromAAB(AAB other)
@@ -250,9 +252,10 @@ public class Circle extends AbstractDrawable implements Collidable
 
 	/**
 	 * @param other
-	 *		A Circle that may be colliding with this object
+	 * 		A Circle that may be colliding with this object
+	 *
 	 * @return A Vector that, if this Circle were to follow, would displace it such that it would no longer be colliding
-	 * 		with {@code other}
+	 * with {@code other}
 	 */
 	Vector mtvFromCircle(Circle other)
 	{
@@ -264,8 +267,9 @@ public class Circle extends AbstractDrawable implements Collidable
 
 	/**
 	 * @param axis
-	 *		An axis onto which to project this circle
-	 * @return The Interval along this axis upon which this circle falls.
+	 * 		An axis onto which to project this circle
+	 *
+	 * @return The DefaultInterval along this axis upon which this circle falls.
 	 */
 	@Override
 	public Interval projectionOnto(Dimensional axis)

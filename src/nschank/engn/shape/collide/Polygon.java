@@ -6,6 +6,7 @@ import nschank.collect.dim.Dimensionals;
 import nschank.collect.dim.Vector;
 import nschank.engn.shape.AbstractDrawable;
 import nschank.util.Interval;
+import nschank.util.Intervals;
 import nschank.util.NLists;
 
 import java.awt.Color;
@@ -102,8 +103,8 @@ public class Polygon extends AbstractDrawable implements Collidable
 		Collections.addAll(points, others);
 		Dimensional offFromCenter = Dimensionals.weightedCenter(points);
 
-		Interval actualWidth = Interval.from(Dimensionals.getCoordinate(points, 0));
-		Interval actualHeight = Interval.from(Dimensionals.getCoordinate(points, 1));
+		Interval actualWidth = Intervals.from(Dimensionals.getCoordinate(points, 0));
+		Interval actualHeight = Intervals.from(Dimensionals.getCoordinate(points, 1));
 		super.setCenterPosition(offFromCenter);
 		super.setWidth(actualWidth.width());
 		super.setHeight(actualHeight.width());
@@ -164,8 +165,8 @@ public class Polygon extends AbstractDrawable implements Collidable
 //		{
 //			PointToFloat use = new PointToFloat(nschank.collect.dim.Point.ZERO_2D, axis);
 //
-//			Interval projection = this.projectionOnto(axis, use);
-//			Interval otherProjection = other.projectionOnto(axis, use);
+//			DefaultInterval projection = this.projectionOnto(axis, use);
+//			DefaultInterval otherProjection = other.projectionOnto(axis, use);
 //
 //			if(!projection.isIntersecting(otherProjection)) return Optional.absent();
 //
@@ -182,8 +183,8 @@ public class Polygon extends AbstractDrawable implements Collidable
 //		{
 //			PointToFloat use = new PointToFloat(nschank.collect.dim.Point.ZERO_2D, axis);
 //
-//			Interval projection = this.projectionOnto(axis, use);
-//			Interval otherProjection = other.projectionOnto(axis, use);
+//			DefaultInterval projection = this.projectionOnto(axis, use);
+//			DefaultInterval otherProjection = other.projectionOnto(axis, use);
 //
 //			if(!projection.isIntersecting(otherProjection)) return Optional.absent();
 //
@@ -358,16 +359,16 @@ public class Polygon extends AbstractDrawable implements Collidable
 	@Override
 	public void setRotation(double theta)
 	{
-		Interval newX = Interval.about(this.getCenterPosition().getCoordinate(0), 0.0f);
-		Interval newY = Interval.about(this.getCenterPosition().getCoordinate(0), 0.0f);
+		Interval newX = Intervals.about(this.getCenterPosition().getCoordinate(0), 0.0f);
+		Interval newY = Intervals.about(this.getCenterPosition().getCoordinate(0), 0.0f);
 		Vector centre = new Vector(this.getCenterPosition());
 		for(int i = 0; i < this.points.size(); i++)
 		{
 			Vector rel = centre.minus(this.points.get(i)).smult(-1);
 			this.points.set(i, new Vector(this.getCenterPosition())
 					.plus(Vector.fromPolar(rel.mag(), rel.angle() + (theta - this.angle))));
-			newX = newX.and(Interval.about(this.points.get(i).getCoordinate(0), 0.0f));
-			newY = newY.and(Interval.about(this.points.get(i).getCoordinate(0), 0.0f));
+			newX = newX.and(this.points.get(i).getCoordinate(0));
+			newY = newY.and(this.points.get(i).getCoordinate(0));
 		}
 		this.angle = theta;
 		this.xInterval = newX;
@@ -380,11 +381,10 @@ public class Polygon extends AbstractDrawable implements Collidable
 	 */
 	private void initPolygon(List<Dimensional> points)
 	{
-		double area6 = Dimensionals.area(points) * 6d;
-		Dimensional offFromCenter = this.unweightedCenter(points).sdiv(area6);
+		Dimensional offFromCenter = Dimensionals.weightedCenter(points);
 
-		Interval actualWidth = Interval.from(Dimensionals.getCoordinate(points, 0));
-		Interval actualHeight = Interval.from(Dimensionals.getCoordinate(points, 1));
+		Interval actualWidth = Intervals.from(Dimensionals.getCoordinate(points, 0));
+		Interval actualHeight = Intervals.from(Dimensionals.getCoordinate(points, 1));
 
 		List<Vector> addToCenters = new ArrayList<>();
 		double adjustedWidth = ((this.getWidth()) / (actualWidth.getMax() - actualWidth.getMin()));
@@ -411,8 +411,8 @@ public class Polygon extends AbstractDrawable implements Collidable
 		}
 
 		this.points = points;
-		this.xInterval = Interval.from(Dimensionals.getCoordinate(points, 0));
-		this.yInterval = Interval.from(Dimensionals.getCoordinate(points, 1));
+		this.xInterval = Intervals.from(Dimensionals.getCoordinate(points, 0));
+		this.yInterval = Intervals.from(Dimensionals.getCoordinate(points, 1));
 		this.momentOfInertia = numeratorSum / (denominatorSum * 6.0f);
 	}
 
@@ -449,14 +449,12 @@ public class Polygon extends AbstractDrawable implements Collidable
 	 * @param axis
 	 * 		An axis onto which to project this {@code Polygon}
 	 *
-	 * @return The Interval along this axis along which this {@code Polygon} falls
+	 * @return The DefaultInterval along this axis along which this {@code Polygon} falls
 	 */
 	@Override
 	public Interval projectionOnto(Dimensional axis)
 	{
-		//return Interval.from(this.points, Functions.compose(projector, p2p));
-		return null;
-		//todo
+		return Dimensionals.project(this.points, axis);
 	}
 
 	/**
@@ -502,8 +500,8 @@ public class Polygon extends AbstractDrawable implements Collidable
 			this.points.set(i, new Vector(this.points.get(i)).smult(2).minus(this.getCenterPosition())
 															 .projectOntoLine(Vector.ZERO_2D, projectionAtHeight)
 															 .smult((h / this.getHeight()) - 1));
-		this.xInterval = Interval.from(Dimensionals.getCoordinate(this.points, 0));
-		this.yInterval = Interval.from(Dimensionals.getCoordinate(this.points, 1));
+		this.xInterval = Intervals.from(Dimensionals.getCoordinate(this.points, 0));
+		this.yInterval = Intervals.from(Dimensionals.getCoordinate(this.points, 1));
 		super.setHeight(h);
 	}
 
@@ -521,8 +519,8 @@ public class Polygon extends AbstractDrawable implements Collidable
 			this.points.set(i, new Vector(this.points.get(i)).smult(2).minus(this.getCenterPosition())
 															 .projectOntoLine(Vector.ZERO_2D, projectionAtWidth)
 															 .smult((w / this.getWidth()) - 1));
-		this.xInterval = Interval.from(Dimensionals.getCoordinate(this.points, 0));
-		this.yInterval = Interval.from(Dimensionals.getCoordinate(this.points, 1));
+		this.xInterval = Intervals.from(Dimensionals.getCoordinate(this.points, 0));
+		this.yInterval = Intervals.from(Dimensionals.getCoordinate(this.points, 1));
 		super.setWidth(w);
 	}
 

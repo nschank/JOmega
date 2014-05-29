@@ -3,6 +3,7 @@ package nschank.engn.shape;
 import nschank.collect.dim.Dimensional;
 import nschank.collect.dim.Point;
 import nschank.util.Interval;
+import nschank.util.Intervals;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -37,8 +38,8 @@ public abstract class AbstractDrawable implements Drawable
 		this.width = 0;
 		this.height = 0;
 		this.color = Color.BLACK;
-		this.xInterval = Interval.of(0, 0);
-		this.yInterval = Interval.of(0, 0);
+		this.xInterval = Intervals.about(0, 0);
+		this.yInterval = Intervals.about(0, 0);
 	}
 
 	/**
@@ -170,8 +171,8 @@ public abstract class AbstractDrawable implements Drawable
 	 */
 	private void updateIntervals()
 	{
-		this.xInterval = Interval.about(this.position.getCoordinate(0), this.width);
-		this.yInterval = Interval.about(this.position.getCoordinate(1), this.height);
+		this.xInterval = Intervals.about(this.position.getCoordinate(0), this.width);
+		this.yInterval = Intervals.about(this.position.getCoordinate(1), this.height);
 	}
 
 	/**
