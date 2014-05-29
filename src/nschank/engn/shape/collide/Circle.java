@@ -294,6 +294,7 @@ public class Circle extends AbstractDrawable implements Collidable
 
 	/**
 	 * @param theta
+	 * 		An amount by which this Circle should rotate counter-clockwise
 	 */
 	@Override
 	public void rotate(double theta)
@@ -302,7 +303,10 @@ public class Circle extends AbstractDrawable implements Collidable
 	}
 
 	/**
+	 * Changes the diameter of this circle
+	 *
 	 * @param height
+	 * 		The new diameter of this {@code Circle}
 	 */
 	@Override
 	public void setHeight(double height)
@@ -312,7 +316,22 @@ public class Circle extends AbstractDrawable implements Collidable
 	}
 
 	/**
+	 * Changes the radius of this Circle
+	 *
+	 * @param radius
+	 * 		The new radius of this {@code Circle}
+	 */
+	public void setRadius(double radius)
+	{
+		super.setHeight(radius * 2d);
+		super.setWidth(radius * 2d);
+	}
+
+	/**
+	 * Changes the diameter of this circle
+	 *
 	 * @param width
+	 * 		The new diameter of this {@code Circle}
 	 */
 	@Override
 	public void setWidth(double width)
@@ -322,7 +341,7 @@ public class Circle extends AbstractDrawable implements Collidable
 	}
 
 	/**
-	 * @return
+	 * @return A String representation of this Circle, including the center position and radius.
 	 */
 	@Override
 	public String toString()
