@@ -13,6 +13,8 @@ import java.util.Map;
  * Created on 21 Oct 2013
  * Last updated on 29 May 2014
  *
+ * Another central interface in the nschank.engn.play package.
+ *
  * An Entity is something that exists inside the game world; any character, object, or even invisible interactions are
  * types of Entities. Entities have properties, inputs, and outputs.
  *
@@ -29,7 +31,26 @@ import java.util.Map;
  * They often start with the "do" keyword: e.g. doJump, doOpen, doSomething. An Input starting with the "do" keyword must
  * automatically call a corresponding Output starting with the "on" keyword.
  *
- * Another central interface in the nschank.engn.play package.
+ * Entities have certain default properties, {@code Output}s, and {@code Input}s that must be honoured internally.
+ *
+ * The following properties (marked with a starting exclamation mark) must be immutable and follow the given definitions:
+ * 	- !self 		->	This {@code Entity}
+ * 	- !universe 	-> 	The {@code Universe} in which this {@code Entity} lives.
+ *
+ * The following {@code Input}s must not be replaceable and must take the following actions:
+ *  - !errorCheckPrint	->	Used for error checking. Prints every argument/value pair that was input to it.
+ *  - !doRemove			->	Removes this {@code Entity} from its {@code Universe}.
+ * 	- !removeProperty	->	For the String value of the argument name "property", remove this {@code Entity}'s property
+ * 							of that name.
+ * 	- !runOutput		->	For the String value of the argument name "target", runs this {@code Entity}'s output of that
+ * 							name. All arguments besides "target" should be passed along to that output.
+ * 	- !setProperty		->	For every argument name/value pair, set this {@code Entity}'s property of that name to that
+ * 							value.
+ *
+ * The following {@code Output}s must be used in the following manners, with the following arguments:
+ * 	- !onDraw			->	Must be called by the draw(Graphics2D) method, with no arguments. Should not (and literally
+ * 							cannot) attempt to draw anything directly.
+ * 	- !onTick			->	Must be called by the onTick(long) method, with one argument: nanosSinceLastTick->that long.
  *
  * @author nschank, Brown University
  * @version 4.6
@@ -47,7 +68,8 @@ public interface Entity extends Tickable, Drawable
 	 * Causes an Input to be run given the type name and the arguments (as a map from argument name to evaluatable
 	 * expression). An argument is not guaranteed to be used or evaluated, if the input does not use it by name. The
 	 * input should be prevented from running if the "enabled" property, if it exists, evaluates to false. If the input
-	 * name starts with "do", then the corresponding output starting with "on" must be called.
+	 * name starts with "do", then the corresponding output starting with "on" must be called. The input is guaranteed
+	 * to be performed first.
 	 *
 	 * @param inputType
 	 * 		The name. Often starts with "do" and, if it does, an output will be fired.
@@ -60,7 +82,10 @@ public interface Entity extends Tickable, Drawable
 	 */
 	Map<String, Object> getProperties();
 	/**
-	 * Returns the value of the property of a given name. Should return {@code null}, if that property is not set.
+	 * Returns the value of the property of a given name. Should return {@code null}, if that property is not set. Certain
+	 * properties should always return particular things, having been internally set:
+	 * 	- !universe -> The {@code Universe} in which this {@code Entity} resides
+	 * 	- !self -> This {@code Entity}
 	 * @param ofName
 	 *		The name of a property
 	 * @return The value of the property named {@code ofName}
@@ -74,7 +99,7 @@ public interface Entity extends Tickable, Drawable
 	 */
 	boolean hasInput(String ofName);
 	/**
-	 * Checks whether this is a property registered under the name {@code ofName}
+	 * Checks whether this is a property registered under the name {@code ofName}.
 	 * @param ofName
 	 *		The name of a possible property
 	 * @return Whether asking for the property named {@code ofName} will return an {@code Object}, rather than just
@@ -98,7 +123,10 @@ public interface Entity extends Tickable, Drawable
 	void putProperties(Map<String, Object> properties);
 	/**
 	 * Attaches the value of {@code ofValue} to the name {@code ofName} within this {@code Entity}. The value {@code null}
-	 * must be identical to removing the property.
+	 * must be identical to removing the property. The following properties are internally set and calling putProperty
+	 * with them should have no effect:
+	 * 	- !universe -> Should always refer to the {@code Universe} in which this {@code Entity} resides
+	 * 	- !self -> Should always refer to this {@code Entity}
 	 * @param ofName
 	 * 		The name of a property
 	 * @param ofValue
@@ -110,7 +138,15 @@ public interface Entity extends Tickable, Drawable
 	 * correspond to a property, does nothing.
 	 * @param ofName
 	 * 		The name of a property
-	 *
 	 */
 	void removeProperty(String ofName);
+	/**
+	 * Runs the output of the given name using the given arguments.
+	 *
+	 * @param ofName
+	 * 		The name of an Output
+	 * @param args
+	 * 		Arguments, as String/Evaluator pairs, to supply to that Output
+	 */
+	void runOutput(String ofName, Map<String, Evaluator> args);
 }

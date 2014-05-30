@@ -1,10 +1,7 @@
 package nschank.engn.play;
 
 import nschank.collect.tuple.Pair;
-import nschank.engn.play.io.Input;
-import nschank.engn.play.io.InputFailureException;
-import nschank.engn.play.io.Inputs;
-import nschank.engn.play.io.Output;
+import nschank.engn.play.io.*;
 import nschank.engn.play.io.eval.Constant;
 import nschank.engn.play.io.eval.Evaluator;
 import nschank.engn.play.univ.Universe;
@@ -221,5 +218,30 @@ public abstract class AbstractEntity extends AbstractDrawable implements Entity
 	{
 		if(ofName.isEmpty() || ofName.charAt(0) == '!') return;
 		this.properties.remove(ofName);
+	}
+
+	/**
+	 * todo
+	 *
+	 * @param output
+	 * @param conn
+	 */
+	@Override
+	public void connect(final String output, final Connection conn)
+	{
+
+	}
+
+	/**
+	 * todo
+	 *
+	 * @param ofName
+	 * 		The name of an Output
+	 * @param args
+	 */
+	@Override
+	public void runOutput(final String ofName, final Map<String, Evaluator> args)
+	{
+
 	}
 }
