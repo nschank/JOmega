@@ -335,7 +335,7 @@ public abstract class AbstractPhysicsEntity extends AbstractEntity implements Ph
 				return this.getCoefficientOfStaticFrictionSqrt();
 			case ":coefficientOfRestitutionSqrt":
 				return this.getCoefficientOfRestitutionSqrt();
-			case ":momentOfInertia":
+			case "!momentOfInertia":
 				return this.getMomentOfInertia();
 			case ":shape":
 				return this.getShape();
@@ -348,6 +348,8 @@ public abstract class AbstractPhysicsEntity extends AbstractEntity implements Ph
 					this.getDerivative(Integer.valueOf(ofName.substring(5)));
 				else if((ofName.length() > 6) && ":rderiv".equals(ofName.substring(0, 6)))
 					this.getRotationalDerivative(Integer.valueOf(ofName.substring(6)));
+				else if(ofName.isEmpty() || ofName.charAt(0) == ':')
+					throw new NonexistentInternalPropertyException(ofName);
 				return super.getProperty(ofName);
 		}
 	}
@@ -459,7 +461,7 @@ public abstract class AbstractPhysicsEntity extends AbstractEntity implements Ph
 	 */
 	private boolean isSprite()
 	{
-		return this.hasProperty(":isSprite") && (Boolean) this.getProperty(":isSprite");
+		return this.hasProperty(":hasSprite") && (Boolean) this.getProperty(":hasSprite");
 	}
 
 	/**
@@ -585,6 +587,8 @@ public abstract class AbstractPhysicsEntity extends AbstractEntity implements Ph
 					this.setDerivative(Integer.valueOf(ofName.substring(5)), (Dimensional) ofValue);
 				else if((ofName.length() > 6) && ":rderiv".equals(ofName.substring(0, 6)))
 					this.setRotationalDerivative(Integer.valueOf(ofName.substring(6)), (Double) ofValue);
+				else if(ofName.isEmpty() || ofName.charAt(0) == ':')
+					throw new NonexistentInternalPropertyException(ofName);
 				else super.putProperty(ofName, ofValue);
 				break;
 		}
@@ -614,7 +618,7 @@ public abstract class AbstractPhysicsEntity extends AbstractEntity implements Ph
 				Pair.tuple("!impulse", new Constant(collision.getImpulse())),
 				Pair.tuple("!friction", new Constant(collision.getSlidingFrictionalImpulse())),
 				Pair.tuple("!collisionPoint", new Constant(collision.getCollisionPoint())),
-				Pair.tuple("!collidingWith", new Constant(collision.getOther().getProperty(":name").toString()))));
+				Pair.tuple("!collidingWith", new Constant(collision.getOther().getProperty("name").toString()))));
 		if(collision.getMTV().mag2() == 0) return;
 		this.applyLocationChange(collision.getMTV());
 
