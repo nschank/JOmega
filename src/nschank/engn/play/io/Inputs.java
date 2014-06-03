@@ -19,6 +19,77 @@ import java.util.Map;
  */
 public final class Inputs
 {
+	private Inputs()
+	{
+
+	}
+
+	/**
+	 * Creates an {@code Input} which performs all of the given {@code Input}s in the given order
+	 *
+	 * @param runnable
+	 * 		Any number of {@code Input}s
+	 *
+	 * @return An {@code Input} which will run all of the given {@code Input}s in order
+	 */
+	public static Input doAll(final Input... runnable)
+	{
+		return new Input()
+		{
+			@Override
+			public void run(Map<String, Evaluator> args)
+			{
+				for(Input i : runnable)
+					i.run(args);
+			}
+		};
+	}
+
+	/**
+	 * A basic implementation of the doRemove {@code Input} as defined in the {@code Entity} interface.
+	 *
+	 * @param entity
+	 * 		The {@code Entity} whose doRemove {@code Input} is being made
+	 *
+	 * @return The {@code Input} that has been created
+	 */
+	public static Input doRemove(final Entity entity)
+	{
+		return new Input()
+		{
+			@Override
+			public void run(Map<String, Evaluator> args)
+			{
+				((Universe) entity.getProperty("!universe")).removeEntity(entity);
+			}
+		};
+	}
+
+	/**
+	 * A basic implementation of the errorCheckPrint {@code Input} as defined in the {@code Entity} interface.
+	 *
+	 * @param entity
+	 * 		The {@code Entity} whose errorCheckPrint {@code Input} is being made
+	 *
+	 * @return The {@code Input} that has been created
+	 */
+	public static Input errorCheckPrint(final Entity entity)
+	{
+		return new Input()
+		{
+			@Override
+			public void run(Map<String, Evaluator> args)
+			{
+				for(String in : args.keySet())
+					System.out.println(in + " -> " + args.get(in).eval(args, entity));
+			}
+		};
+	}
+
+	/**
+	 *
+	 * @return An {@code Input} which does nothing.
+	 */
 	public static Input nothing()
 	{
 		return new Input()
@@ -31,15 +102,45 @@ public final class Inputs
 		};
 	}
 
-	public static Input doAll(final Input... runnable)
+	/**
+	 * A basic implementation of the removeProperty {@code Input} as defined in the {@code Entity} interface.
+	 *
+	 * @param entity
+	 * 		The {@code Entity} whose removeProperty {@code Input} is being made
+	 *
+	 * @return The {@code Input} that has been created
+	 */
+	public static Input removeProperty(final Entity entity)
+	{
+		return new Input()
+		{
+			@Override
+			public void run(final Map<String, Evaluator> args)
+			{
+				String ofName = args.get("property").eval(args, entity).toString();
+				entity.removeProperty(ofName);
+			}
+		};
+	}
+
+	/**
+	 * A basic implementation of the runOutput {@code Input} as defined in the {@code Entity} interface.
+	 *
+	 * @param entity
+	 * 		The {@code Entity} whose runOutput {@code Input} is being made
+	 *
+	 * @return The {@code Input} that has been created
+	 */
+	public static Input runOutput(final Entity entity)
 	{
 		return new Input()
 		{
 			@Override
 			public void run(Map<String, Evaluator> args)
 			{
-				for(Input i : runnable)
-					i.run(args);
+				String target = args.get("target").eval(args, entity).toString();
+				args.remove("target");
+				entity.runOutput(target, args);
 			}
 		};
 	}
@@ -69,94 +170,5 @@ public final class Inputs
 				}));
 			}
 		};
-	}
-
-	/**
-	 * A basic implementation of the removeProperty {@code Input} as defined in the {@code Entity} interface.
-	 *
-	 * @param entity
-	 * 		The {@code Entity} whose removeProperty {@code Input} is being made
-	 *
-	 * @return The {@code Input} that has been created
-	 */
-	public static Input removeProperty(final Entity entity)
-	{
-		return new Input()
-		{
-			@Override
-			public void run(final Map<String, Evaluator> args)
-			{
-				String ofName = args.get("property").eval(args, entity).toString();
-				entity.removeProperty(ofName);
-			}
-		};
-	}
-
-	/**
-	 * A basic implementation of the doRemove {@code Input} as defined in the {@code Entity} interface.
-	 *
-	 * @param entity
-	 * 		The {@code Entity} whose doRemove {@code Input} is being made
-	 *
-	 * @return The {@code Input} that has been created
-	 */
-	public static Input doRemove(final Entity entity)
-	{
-		return new Input()
-		{
-			@Override
-			public void run(Map<String, Evaluator> args)
-			{
-				((Universe) entity.getProperty("!universe")).removeEntity(entity);
-			}
-		};
-	}
-
-	/**
-	 * A basic implementation of the runOutput {@code Input} as defined in the {@code Entity} interface.
-	 *
-	 * @param entity
-	 * 		The {@code Entity} whose runOutput {@code Input} is being made
-	 *
-	 * @return The {@code Input} that has been created
-	 */
-	public static Input runOutput(final Entity entity)
-	{
-		return new Input()
-		{
-			@Override
-			public void run(Map<String, Evaluator> args)
-			{
-				String target = args.get("target").eval(args, entity).toString();
-				args.remove("target");
-				entity.runOutput(target, args);
-			}
-		};
-	}
-
-	/**
-	 * A basic implementation of the errorCheckPrint {@code Input} as defined in the {@code Entity} interface.
-	 *
-	 * @param entity
-	 * 		The {@code Entity} whose errorCheckPrint {@code Input} is being made
-	 *
-	 * @return The {@code Input} that has been created
-	 */
-	public static Input errorCheckPrint(final Entity entity)
-	{
-		return new Input()
-		{
-			@Override
-			public void run(Map<String, Evaluator> args)
-			{
-				for(String in : args.keySet())
-					System.out.println(in + " -> " + args.get(in).eval(args, entity));
-			}
-		};
-	}
-
-	private Inputs()
-	{
-
 	}
 }
