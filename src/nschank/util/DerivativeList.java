@@ -17,7 +17,7 @@ public interface DerivativeList<T>
 	 * @param deriv
 	 * 		The derivative to find within this list; a nonnegative integer
 	 *
-	 * @return The {@code deriv}th derivative of the list; always 0 if above the maximum derivative
+	 * @return The {@code deriv}th derivative of the list; always 0 (or equivalent) if above the maximum derivative
 	 */
 	T getDerivative(int deriv);
 	/**
