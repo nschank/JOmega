@@ -3,6 +3,7 @@ package nschank.engn.play.phys;
 import com.google.common.base.Optional;
 import nschank.collect.dim.Dimensional;
 import nschank.collect.dim.Vector;
+import nschank.collect.dim.VectorDimensionalList;
 import nschank.collect.tuple.Pair;
 import nschank.engn.play.AbstractEntity;
 import nschank.engn.play.entity.PropertyMisformatException;
@@ -15,6 +16,8 @@ import nschank.engn.shape.Drawable;
 import nschank.engn.shape.collide.Collidable;
 import nschank.engn.shape.collide.Ray;
 import nschank.engn.sprite.AnimatedSprite;
+import nschank.util.DerivativeList;
+import nschank.util.DoubleDerivativeList;
 import nschank.util.Interval;
 import nschank.util.NMaps;
 
@@ -36,7 +39,7 @@ import java.util.Map;
  * Is able to intake an AI which can instruct it as necessary.
  *
  * @author nschank, Brown University
- * @version 4.8
+ * @version 5.1
  */
 public abstract class AbstractPhysicsEntity extends AbstractEntity implements PhysicsEntity
 {
@@ -63,8 +66,8 @@ public abstract class AbstractPhysicsEntity extends AbstractEntity implements Ph
 	private Vector forces;
 	private Vector impulses;
 	private double mass;
-	private PositionDerivativeList2df pdl;
-	private RotationDerivativeListf rdl;
+	private DerivativeList<Vector> pdl;
+	private DerivativeList<Double> rdl;
 	private double rotationalImpulse;
 	private Collidable shape;
 	private double torque;
@@ -86,8 +89,8 @@ public abstract class AbstractPhysicsEntity extends AbstractEntity implements Ph
 		this.impulses = Vector.ZERO_2D;
 		this.rotationalImpulse = 0.0;
 		this.torque = 0.0;
-		this.pdl = new PositionDerivativeList2df(this.getShape().getCenterPosition());
-		this.rdl = new RotationDerivativeListf(0.0f);
+		this.pdl = new VectorDimensionalList(new Vector(this.getShape().getCenterPosition()));
+		this.rdl = new DoubleDerivativeList(0.0);
 		this.initInputs();
 		this.initDefaultProperties();
 		this.connect("onRemove", new Connection(this, "doPhysicalRemove"));
@@ -127,7 +130,7 @@ public abstract class AbstractPhysicsEntity extends AbstractEntity implements Ph
 	@Override
 	public void applyLocationChange(Vector change)
 	{
-		this.setCenterPosition(change.plus(this.getShape().getCenterPosition());
+		this.setCenterPosition(change.plus(this.getShape().getCenterPosition()));
 	}
 
 	/**
@@ -136,8 +139,8 @@ public abstract class AbstractPhysicsEntity extends AbstractEntity implements Ph
 	@Override
 	public void arrestMotion()
 	{
-		this.pdl = new PositionDerivativeList2df(this.getCenterPosition());
-		this.rdl = new RotationDerivativeListf(this.getAngle());
+		this.pdl = new VectorDimensionalList(new Vector(this.getCenterPosition()));
+		this.rdl = new DoubleDerivativeList(this.getAngle());
 	}
 
 	/**
@@ -186,7 +189,7 @@ public abstract class AbstractPhysicsEntity extends AbstractEntity implements Ph
 	@Override
 	public double getAngle()
 	{
-		return this.rdl.getAngle();
+		return this.rdl.getDerivative(0);
 	}
 
 	/**
@@ -195,8 +198,8 @@ public abstract class AbstractPhysicsEntity extends AbstractEntity implements Ph
 	@Override
 	public void setAngle(double theta)
 	{
-		this.rdl.setAngle(theta);
-		this.getShape().setRotation(this.rdl.getAngle());
+		this.rdl.setDerivative(0, theta);
+		this.getShape().setRotation(this.rdl.getDerivative(0));
 	}
 
 	/**
@@ -205,7 +208,7 @@ public abstract class AbstractPhysicsEntity extends AbstractEntity implements Ph
 	@Override
 	public Dimensional getCenterPosition()
 	{
-		return this.pdl.getPosition();
+		return this.pdl.getDerivative(0);
 	}
 
 	/**
@@ -215,7 +218,7 @@ public abstract class AbstractPhysicsEntity extends AbstractEntity implements Ph
 	public void setCenterPosition(Dimensional centerPosition)
 	{
 		this.getShape().setCenterPosition(centerPosition);
-		this.pdl.setPosition(centerPosition);
+		this.pdl.setDerivative(0, new Vector(centerPosition));
 		if(this.isSprite()) ((Drawable) this.getProperty(":sprite")).setCenterPosition(centerPosition);
 	}
 
@@ -382,7 +385,7 @@ public abstract class AbstractPhysicsEntity extends AbstractEntity implements Ph
 	@Override
 	public double getRotationalVelocity()
 	{
-		return this.rdl.getVelocity();
+		return this.rdl.getDerivative(1);
 	}
 
 	/**
@@ -391,7 +394,7 @@ public abstract class AbstractPhysicsEntity extends AbstractEntity implements Ph
 	@Override
 	public void setRotationalVelocity(double rotationalVelocity)
 	{
-		this.rdl.setVelocity(rotationalVelocity);
+		this.rdl.setDerivative(1, rotationalVelocity);
 	}
 
 	/**
@@ -426,7 +429,7 @@ public abstract class AbstractPhysicsEntity extends AbstractEntity implements Ph
 	@Override
 	public void setVelocity(Dimensional newVelocity)
 	{
-		this.pdl.setVelocity(newVelocity);
+		this.pdl.setDerivative(1, new Vector(newVelocity));
 	}
 
 	/**
@@ -655,12 +658,12 @@ public abstract class AbstractPhysicsEntity extends AbstractEntity implements Ph
 
 	/**
 	 * @param i
-	 * @param vec2f
+	 * @param dim
 	 */
-	void setDerivative(int i, Dimensional vec2f)
+	void setDerivative(int i, Dimensional dim)
 	{
 		if(i <= 0) throw new IllegalArgumentException("Cannot set a non-derivative of position from here.");
-		this.pdl.setDerivative(i, vec2f);
+		this.pdl.setDerivative(i, new Vector(dim));
 	}
 
 	/**
