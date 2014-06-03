@@ -19,6 +19,48 @@ import nschank.engn.shape.collide.Ray;
  * PhysicsEntity should cause this object to be moved away using the MTV and, depending on the {@code ReactionType},
  * possibly reacting using impulses and friction.
  *
+ * {@code PhysicsEntity}s have certain default properties, {@code Output}s, and {@code Input}s that must be honoured
+ * internally, in addition to those from {@code Entity}
+ *
+ * The following properties (marked with a starting exclamation mark) must be immutable and follow the given definitions:
+ * - !self 		->	This {@code Entity}
+ * - !universe 	-> 	The {@code Universe} in which this {@code Entity} lives.
+ *
+ * The following {@code Input}s must not be replaceable and must take the following actions:
+ * - !addToBoundary		->	Adds this {@code PhysicsEntity} to the boundary given by {@code group}
+ * - !addToCollisionGroup->	Adds this {@code PhysicsEntity} to the collision group given by {@code group}
+ * - !addToForceGroup	->	Adds this {@code PhysicsEntity} to the force group given by {@code group}
+ * - !addToRayGroup		->	Adds this {@code PhysicsEntity} to the ray group given by {@code group}
+ * - !doApplyForce		->  Applies the force given by {@code force}, as a {@code Dimensional}, at the point given by
+ *                            {@code position}, as a {@code Dimensional}. {@code position} is {@code :centerPosition} by
+ * 							default.
+ * - !doApplyImpulse	->  Applies the impulse given by {@code impulse}, as a {@code Dimensional}, at the point given by
+ *                          {@code position}, as a {@code Dimensional}. {@code position} is {@code :centerPosition} by
+ * 							default.
+ * - !doPhysicalRemove	->	Removes this {@code PhysicsEntity} from its {@code Universe}. Automatically called by
+ *                            {@code onRemove}.
+ * - !doRemove			->	Removes this {@code Entity} from its {@code Universe}.
+ * - !doRotate			-> 	Rotates this {@code PhysicsEntity} the number of radians given by {@code theta}.
+ * - !errorCheckPrint	->	Used for error checking. Prints every argument/value pair that was input to it.
+ * - !removeFromBoundary->	Removes this {@code PhysicsEntity} from the boundary given by {@code group}
+ * - !removeFromCollisionGroup
+ * 						->	Removes this {@code PhysicsEntity} from the collision group given by {@code group}
+ * - !removeFromForceGroup
+ * 						->	Removes this {@code PhysicsEntity} from the force group given by {@code group}
+ * - !removeFromRayGroup->	Removes this {@code PhysicsEntity} from the ray group given by {@code group}
+ * - !removeProperty	->	For the String value of the argument name "property", remove this {@code Entity}'s property
+ * 							of that name.
+ * - !runOutput			->	For the String value of the argument name "target", runs this {@code Entity}'s output of that
+ * 							name. All arguments besides "target" should be passed along to that output.
+ * - !setProperty		->	For every argument name/value pair, set this {@code Entity}'s property of that name to that
+ * 							value.
+ *
+ * The following {@code Output}s must be used in the following manners, with the following arguments:
+ * - !onDraw			->	Must be called by the draw(Graphics2D) method, with no arguments. Should not (and literally
+ * 							cannot) attempt to draw anything directly.
+ * - !onTick			->	Must be called by the onTick(long) method, with one argument: nanosSinceLastTick->that long.
+ *
+ * @see nschank.engn.play.Entity
  * @author nschank, Brown University
  * @version 3.2
  */
@@ -79,13 +121,6 @@ public interface PhysicsEntity extends Entity, Drawable
 	 */
 	double getAngle();
 	/**
-	 * Changes the angle of this {@code PhysCollision} relative to the x-axis, in radians.
-	 *
-	 * @param theta
-	 * 		An angle from the x-axis, in radians
-	 */
-	void setAngle(double theta);
-	/**
 	 * Used by the {@code PhysCollision} class. TODO
 	 *
 	 * @return The square root of the coefficient of dynamic friction.
@@ -109,12 +144,6 @@ public interface PhysicsEntity extends Entity, Drawable
 	 */
 	double getMass();
 	/**
-	 * Sets the mass of this {@code PhysicsEntity}
-	 * @param newMass
-	 * 		A new mass for this {@code PhysicsEntity}
-	 */
-	void setMass(double newMass);
-	/**
 	 * The mass moment of inertia of this {@code PhysicsEntity}, calculated by multiplying the moment of inertia of the
 	 * {@code PhysicsEntity}'s shape, and its mass.
 	 * @return The moment of inertia of this {@code PhysicsEntity}
@@ -126,12 +155,6 @@ public interface PhysicsEntity extends Entity, Drawable
 	 */
 	double getRotationalVelocity();
 	/**
-	 * Sets the rotational velocity of this {@code PhysicsEntity}
-	 * @param f
-	 * 		A rotational velocity, in radians per second
-	 */
-	void setRotationalVelocity(double f);
-	/**
 	 * The shape of this {@code PhysicsEntity}. Guaranteed to entirely contain this {@code PhysicsEntity} minimally.
 	 *
 	 * @return The shape of this {@code PhysicsEntity}
@@ -141,12 +164,6 @@ public interface PhysicsEntity extends Entity, Drawable
 	 * @return The velocity of this {@code PhysicsEntity}, as a {@code Vector} representing both direction and magnitude
 	 */
 	Vector getVelocity();
-	/**
-	 * Changes the velocity of this {@code PhysicsEntity}
-	 * @param newVelocity
-	 * 		A {@code Dimensional} representing the new velocity of this {@code PhysicsEntity}
-	 */
-	void setVelocity(Dimensional newVelocity);
 	/**
 	 * Whenever a {@code PhysCollision} is created by {@code collisionWith(PhysicsEntity)}, this method causes the overlap
 	 * between this {@code PhysicsEntity} and another to be undone using the MTV. Depending on {@code reactionType},
@@ -164,6 +181,133 @@ public interface PhysicsEntity extends Entity, Drawable
 	 * 		How much to add to the current angle of this {@code PhysicsEntity}
 	 */
 	void rotate(double plusTheta);
+	/**
+	 * Changes the angle of this {@code PhysCollision} relative to the x-axis, in radians.
+	 *
+	 * @param theta
+	 * 		An angle from the x-axis, in radians
+	 */
+	void setAngle(double theta);
+	/**
+	 * Sets the mass of this {@code PhysicsEntity}
+	 *
+	 * @param newMass
+	 * 		A new mass for this {@code PhysicsEntity}
+	 */
+	void setMass(double newMass);
+	/**
+	 * Sets the rotational velocity of this {@code PhysicsEntity}
+	 *
+	 * @param f
+	 * 		A rotational velocity, in radians per second
+	 */
+	void setRotationalVelocity(double f);
+	/**
+	 * Changes the velocity of this {@code PhysicsEntity}
+	 *
+	 * @param newVelocity
+	 * 		A {@code Dimensional} representing the new velocity of this {@code PhysicsEntity}
+	 */
+	void setVelocity(Dimensional newVelocity);
+
+	/**
+	 * Attaches the value of {@code ofValue} to the name {@code ofName} within this {@code Entity}. The value {@code null}
+	 * must be identical to removing the property. The following properties are internally set and calling putProperty
+	 * with them should have no effect:
+	 * - !momentOfInertia	-> 	Should always refer to the moment of inertia of this {@code PhysicsEntity}. Should change
+	 * only if :shape changes
+	 * - !self 				-> 	Should always refer to this {@code Entity}
+	 * - !universe 			-> 	Should always refer to the {@code Universe} in which this {@code Entity} resides
+	 *
+	 * The following properties are settable, and setting them will have an effect internally. They are marked by starting
+	 * with a colon; in order to prevent confusion, any property starting with a colon that does not correspond to an
+	 * internal property will throw an error.
+	 * - :angle				-> 	double; identical to :rotation
+	 * - :animated			->	boolean; whether :sprite should be ticked as an AnimatedSprite
+	 * - :boundaryGroups	->	List<Double>; sets which boundary groups this object is contained by
+	 * - :centerPosition	->	Dimensional; sets the center position of :shape
+	 * - :coefficientOfDynamicFrictionSqrt
+	 * -> 	double; sets the coefficient of dynamic friction of this {@code PhysicsEntity}. A required
+	 * property of {@code PhysicsEntity}s
+	 * - :coefficientOfRestitutionSqrt
+	 * ->	double; sets the coefficient of restitution of this {@code PhysicsEntity}. A required
+	 * property of {@code PhysicsEntity}s
+	 * - :coefficientOfStaticFrictionSqrt
+	 * ->	double; sets the coefficient of static friction of this {@code PhysicsEntity}. A required
+	 * property of {@code PhysicsEntity}s
+	 * - :collisionGroups	->	List<Double>; sets which collision groups this object is contained by
+	 * - :color				->	Color; sets the color of :shape
+	 * - :deriv{number}		->	Dimensional; where {number} is an integer greater than {@value 0}. Sets that derivative
+	 * of position.
+	 * - :forceGroups		->	List<Double>; sets which force groups this object is contained by
+	 * - :hasSprite			-> 	boolean; referring to whether this PhysicsEntity has a :sprite property, which will be
+	 * drawn instead of :shape on each draw tick
+	 * - :height			->	double; sets the height of :shape
+	 * - :mass				->	double; sets the mass of this {@code PhysicsEntity}. A required property of
+	 * {@code PhysicsEntity}s
+	 * - :rayGroups			->	List<Double>; sets which ray groups this object is contained by
+	 * - :rderiv{number}	->	double; where {number} is an integer greater than {@value 0}. Sets that derivative of
+	 * rotation.
+	 * - :rotation			->	double; sets the angle of :shape
+	 * - :shape				->	Collidable; set the shape of this {@code PhysicsEntity}. This shape will be drawn if
+	 * :hasSprite is not present or is false. A required property of {@code PhysicsEntity}s.
+	 * - :sprite			->	Sprite; a sprite to draw on each draw tick, instead of :shape
+	 * - :velocity			-> 	Dimensional; sets the velocity of this {@code PhysicsEntity}
+	 * - :width				->	double; sets the width of :shape
+	 *
+	 * @param ofName
+	 * 		The name of a property
+	 * @param ofValue
+	 * 		The value to set to that property
+	 */
+	@Override
+	void putProperty(String ofName, Object ofValue);
+	/**
+	 * Returns the value of the property of a given name. Should return {@code null}, if that property is not set. Certain
+	 * properties should always return particular things, having been internally set:
+	 * - !momentOfInertia	->	The moment of inertia of :shape
+	 * - !self 				-> 	This {@code Entity}
+	 * - !universe 			-> 	The {@code Universe} in which this {@code Entity} resides
+	 *
+	 * The following properties can be used to get internal aspects of this {@code PhysicsEntity}. They are marked by
+	 * starting with a colon; in order to prevent confusion, any property starting with a colon that does not correspond
+	 * to an internal property will throw an error.
+	 * - :angle				-> 	double; identical to :rotation
+	 * - :animated			->	boolean; whether :sprite should be ticked as an AnimatedSprite
+	 * - :boundaryGroups	->	List<Double>; which boundary groups this object is contained by
+	 * - :centerPosition	->	Dimensional; the center position of :shape
+	 * - :coefficientOfDynamicFrictionSqrt
+	 * 						-> 	double; the coefficient of dynamic friction of this {@code PhysicsEntity}
+	 * - :coefficientOfRestitutionSqrt
+	 * 						->	double; the coefficient of restitution of this {@code PhysicsEntity}
+	 * - :coefficientOfStaticFrictionSqrt
+	 * 						->	double; the coefficient of static friction of this {@code PhysicsEntity}
+	 * - :collisionGroups	->	List<Double>; which collision groups this object is contained by
+	 * - :color				->	Color; the color of :shape
+	 * - :deriv{number}		->	Dimensional; where {number} is an integer greater than {@value 0}. That derivative of
+	 * 							position.
+	 * - :forceGroups		->	List<Double>; which force groups this object is contained by
+	 * - :hasSprite			-> 	boolean; whether this PhysicsEntity has a :sprite property, which will be
+	 * 							drawn instead of :shape on each draw tick
+	 * - :height			->	double; the height of :shape
+	 * - :mass				->	double; the mass of this {@code PhysicsEntity}
+	 * - :rayGroups			->	List<Double>; which ray groups this object is contained by
+	 * - :rderiv{number}	->	double; where {number} is an integer greater than {@value 0}. That derivative of
+	 * 							rotation.
+	 * - :rotation			->	double; the angle of :shape, in radians from the x axis
+	 * - :shape				->	Collidable; the shape of this {@code PhysicsEntity}. This shape will be drawn if
+	 * 							:hasSprite is not present or is {@literal false}.
+	 * - :sprite			->	Sprite; a sprite to draw on each draw tick, instead of :shape
+	 * - :velocity			-> 	Dimensional; the velocity of this {@code PhysicsEntity}
+	 * - :width				->	double; the width of :shape
+	 *
+	 * @param ofName
+	 * 		The name of a property
+	 *
+	 * @return The value of the property named {@code ofName}
+	 */
+	@Override
+	Object getProperty(String ofName);
 
 	/**
 	 * Created by Nicolas Schank for package nschank.engn.play.phys
@@ -230,5 +374,29 @@ public interface PhysicsEntity extends Entity, Drawable
 		 * As close to realistic reactions as possible. Overlaps, impulses, and friction are all applied.
 		 */
 		FRICTION_AND_IMPULSE
+	}
+
+	/**
+	 * Created by Nicolas Schank for package nschank.engn.play.phys
+	 * Created on 3 Jun 2014
+	 * Last updated on 3 Jun 2014
+	 *
+	 * A {@code RuntimeException} thrown whenever a property is set or gotten, and starts with a colon (:), but does not
+	 * have a real internal effect.
+	 *
+	 * @author nschank, Brown University
+	 * @version 1.1
+	 */
+	public static class NonexistentInternalPropertyException extends RuntimeException
+	{
+		/**
+		 * Creates an exception due to the given, non-internal property
+		 * @param noninternalProperty
+		 * 		A property which starts with a colon (:), but is not a real internal property.
+		 */
+		public NonexistentInternalPropertyException(String noninternalProperty)
+		{
+			super("The property " + noninternalProperty + " is formatted as an internal property, but will have no internal effect.");
+		}
 	}
 }

@@ -97,6 +97,9 @@ public abstract class AbstractEntity extends AbstractDrawable implements Entity
 		if("do".equals(inputType.substring(0, 2)))
 		{
 			this.runOutput("on" + inputType.substring(2), arguments);
+		} else if("!do".equals(inputType.substring(0, 3)))
+		{
+			this.runOutput("on" + inputType.substring(3), arguments);
 		}
 	}
 

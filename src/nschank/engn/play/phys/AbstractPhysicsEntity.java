@@ -93,7 +93,7 @@ public abstract class AbstractPhysicsEntity extends AbstractEntity implements Ph
 		this.rdl = new DoubleDerivativeList(0.0);
 		this.initInputs();
 		this.initDefaultProperties();
-		this.connect("onRemove", new Connection(this, "doPhysicalRemove"));
+		this.connect("onRemove", new Connection(this, "!doPhysicalRemove"));
 	}
 
 	/**

@@ -162,7 +162,7 @@ public final class Inputs
 				Dimensional position = entity.getCenterPosition();
 				if(args.containsKey("position")) position = (Dimensional) args.get("position").eval(args, entity);
 
-				entity.applyForceAt((Vector) args.get("force").eval(args, entity), position);
+				entity.applyForceAt(new Vector((Dimensional) args.get("force").eval(args, entity)), position);
 			}
 		};
 	}
@@ -185,7 +185,7 @@ public final class Inputs
 				Dimensional position = entity.getCenterPosition();
 				if(args.containsKey("position")) position = (Dimensional) args.get("position").eval(args, entity);
 
-				entity.applyForceAt((Vector) args.get("impulse").eval(args, entity), position);
+				entity.applyForceAt(new Vector((Dimensional) args.get("impulse").eval(args, entity)), position);
 			}
 		};
 	}

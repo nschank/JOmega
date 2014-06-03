@@ -29,7 +29,8 @@ import java.util.Map;
  * Inputs are the way that the World, or other Entities, interact with an Entity. They too are represented by a String
  * description, and are often called by a Connection to another Entity's output, or called directly by a user interaction.
  * They often start with the "do" keyword: e.g. doJump, doOpen, doSomething. An Input starting with the "do" keyword must
- * automatically call a corresponding Output starting with the "on" keyword.
+ * automatically call a corresponding Output starting with the "on" keyword; this is also true of Inputs starting with
+ * "!do", though it should still only be replaced by "on". (For example "!doRemove" calls "onRemove")
  *
  * Entities have certain default properties, {@code Output}s, and {@code Input}s that must be honoured internally.
  *
@@ -41,15 +42,15 @@ import java.util.Map;
  * - !errorCheckPrint	->	Used for error checking. Prints every argument/value pair that was input to it.
  * - !doRemove			->	Removes this {@code Entity} from its {@code Universe}.
  * - !removeProperty	->	For the String value of the argument name "property", remove this {@code Entity}'s property
- * of that name.
- * - !runOutput		->	For the String value of the argument name "target", runs this {@code Entity}'s output of that
- * name. All arguments besides "target" should be passed along to that output.
+ * 							of that name.
+ * - !runOutput			->	For the String value of the argument name "target", runs this {@code Entity}'s output of that
+ * 							name. All arguments besides "target" should be passed along to that output.
  * - !setProperty		->	For every argument name/value pair, set this {@code Entity}'s property of that name to that
- * value.
+ * 							value.
  *
  * The following {@code Output}s must be used in the following manners, with the following arguments:
  * - !onDraw			->	Must be called by the draw(Graphics2D) method, with no arguments. Should not (and literally
- * cannot) attempt to draw anything directly.
+ * 							cannot) attempt to draw anything directly.
  * - !onTick			->	Must be called by the onTick(long) method, with one argument: nanosSinceLastTick->that long.
  *
  * @author nschank, Brown University
