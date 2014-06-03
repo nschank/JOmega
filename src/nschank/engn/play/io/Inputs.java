@@ -232,6 +232,27 @@ public final class Inputs
 	}
 
 	/**
+	 * An implementation of the !doRotate {@code Input}, as required by {@code PhysicsEntity}.
+	 *
+	 * @param entity
+	 * 		The {@code Entity} whose !doRotate {@code Input} is being made
+	 *
+	 * @return The {@code Input} to register under !doRotate
+	 */
+	public static Input doRotate(final PhysicsEntity entity)
+	{
+		return new Input()
+		{
+			@Override
+			public void run(Map<String, Evaluator> args)
+			{
+				double theta = (Double) args.get("theta").eval(args, entity);
+				entity.rotate(theta);
+			}
+		};
+	}
+
+	/**
 	 * A basic implementation of the errorCheckPrint {@code Input} as defined in the {@code Entity} interface.
 	 *
 	 * @param entity
@@ -376,27 +397,6 @@ public final class Inputs
 			{
 				String ofName = args.get("property").eval(args, entity).toString();
 				entity.removeProperty(ofName);
-			}
-		};
-	}
-
-	/**
-	 * An implementation of the !rotate {@code Input}, as required by {@code PhysicsEntity}.
-	 *
-	 * @param entity
-	 * 		The {@code Entity} whose !rotate {@code Input} is being made
-	 *
-	 * @return The {@code Input} to register under !rotate
-	 */
-	public static Input rotate(final PhysicsEntity entity)
-	{
-		return new Input()
-		{
-			@Override
-			public void run(Map<String, Evaluator> args)
-			{
-				double theta = (Double)args.get("theta").eval(args, entity);
-				entity.rotate(theta);
 			}
 		};
 	}
