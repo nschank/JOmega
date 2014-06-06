@@ -1,0 +1,23 @@
+  __________________________________________________
+ / PPPP   RRRR    OOO       J  EEEEE   CCC   TTTTT  \
+|  P   P  R   R  O   O      J  E      C   C    T    |
+|  PPPP   RRRR   O   O      J  EEE    C        T    |
+|  P      R  R   O   O  J   J  E      C   C    T    |
+|  P      R   R   OOO    JJJ   EEEEE   CCC     T    |
+ \____________                                      |
+  nschank     \   EEEEE  U   U  L      EEEEE  RRRR   \
+  Brown Univ   |  E      U   U  L      E      R   R  |
+               |  EEE    U   U  L      EEE    RRRR   |
+        2014   |  E      U   U  L      E      R  R   |
+               |  EEEEE   UUU   LLLLL  EEEEE  R   R  |
+                \___________________________________/
+
+The code contained within this subpackage obviously 'ruins' the Euler problems, for those who would attempt them.
+Look at this code only at your own risk! I believe in open source, but as a movie fan (and a person who respects a good
+riddle), I hate spoilers even more, so don't let me ruin these for you!
+
+The problems are arranged in subpackages that contain 25 problems each. They all have an annotation (@Euler) that
+specifies problem number and problem name, for a likely later webpage of some kind. The problem itself is always copied
+into the class Javadoc comments.
+
+For the rest of the problems, see projecteuler.net
