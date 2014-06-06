@@ -32,53 +32,55 @@ import nschank.engn.shape.collide.Ray;
  * - !addToForceGroup	->	Adds this {@code PhysicsEntity} to the force group given by {@code group}
  * - !addToRayGroup		->	Adds this {@code PhysicsEntity} to the ray group given by {@code group}
  * - !doApplyForce		->  Applies the force given by {@code force}, as a {@code Dimensional}, at the point given by
- *                            {@code position}, as a {@code Dimensional}. {@code position} is {@code :centerPosition} by
- * 							default.
+ * {@code position}, as a {@code Dimensional}. {@code position} is {@code :centerPosition} by
+ * default.
  * - !doApplyImpulse	->  Applies the impulse given by {@code impulse}, as a {@code Dimensional}, at the point given by
- *                          {@code position}, as a {@code Dimensional}. {@code position} is {@code :centerPosition} by
- * 							default.
+ * {@code position}, as a {@code Dimensional}. {@code position} is {@code :centerPosition} by
+ * default.
  * - !doPhysicalRemove	->	Removes this {@code PhysicsEntity} from its {@code Universe}. Automatically called by
- *                            {@code onRemove}.
+ * {@code onRemove}.
  * - !doRemove			->	Removes this {@code Entity} from its {@code Universe}.
  * - !doRotate			-> 	Rotates this {@code PhysicsEntity} the number of radians given by {@code theta}.
  * - !errorCheckPrint	->	Used for error checking. Prints every argument/value pair that was input to it.
  * - !removeFromBoundary->	Removes this {@code PhysicsEntity} from the boundary given by {@code group}
  * - !removeFromCollisionGroup
- * 						->	Removes this {@code PhysicsEntity} from the collision group given by {@code group}
+ * ->	Removes this {@code PhysicsEntity} from the collision group given by {@code group}
  * - !removeFromForceGroup
- * 						->	Removes this {@code PhysicsEntity} from the force group given by {@code group}
+ * ->	Removes this {@code PhysicsEntity} from the force group given by {@code group}
  * - !removeFromRayGroup->	Removes this {@code PhysicsEntity} from the ray group given by {@code group}
  * - !removeProperty	->	For the String value of the argument name "property", remove this {@code Entity}'s property
- * 							of that name.
+ * of that name.
  * - !runOutput			->	For the String value of the argument name "target", runs this {@code Entity}'s output of that
- * 							name. All arguments besides "target" should be passed along to that output.
+ * name. All arguments besides "target" should be passed along to that output.
  * - !setProperty		->	For every argument name/value pair, set this {@code Entity}'s property of that name to that
- * 							value.
+ * value.
  *
  * The following {@code Output}s must be used in the following manners, with the following arguments:
  * - !onDraw			->	Must be called by the draw(Graphics2D) method, with no arguments. Should not (and literally
- * 							cannot) attempt to draw anything directly.
+ * cannot) attempt to draw anything directly.
  * - !onTick			->	Must be called by the onTick(long) method, with one argument: nanosSinceLastTick->that long.
  *
- * @see nschank.engn.play.Entity
  * @author nschank, Brown University
  * @version 3.2
+ * @see nschank.engn.play.Entity
  */
 public interface PhysicsEntity extends Entity, Drawable
 {
 	/**
 	 * Applies the given 2D {@code force} (as a {@code Vector}) at a particular {@code position} on the object. Should
 	 * update this tick's force and torque components, to be applied upon the next tick.
+	 *
 	 * @param force
-	 *		A force, represented by a {@code Vector}
+	 * 		A force, represented by a {@code Vector}
 	 * @param position
-	 *		The location at which the force must be applied, as a {@code Dimensional}. Generally, should be inside this
-	 *		{@code PhysicsEntity}.
+	 * 		The location at which the force must be applied, as a {@code Dimensional}. Generally, should be inside this
+	 * 		{@code PhysicsEntity}.
 	 */
 	void applyForceAt(Vector force, Dimensional position);
 	/**
 	 * Applies the given 2D {@code impulse}, as a {@code Vector}, at a particular {@code position} on the object. Should
 	 * update this tick's impulse and rotational-impulse components, to be applied upon the next tick.
+	 *
 	 * @param impulse
 	 * 		An impulse, represented by a {@code Vector}
 	 * @param position
@@ -88,6 +90,7 @@ public interface PhysicsEntity extends Entity, Drawable
 	void applyImpulseAt(Vector impulse, Dimensional position);
 	/**
 	 * Apples the given location change to this {@code PhysicsEntity}.
+	 *
 	 * @param change
 	 * 		A {@code Vector} of movement to apply tho this {@code PhysicsEntity}.
 	 */
@@ -99,11 +102,13 @@ public interface PhysicsEntity extends Entity, Drawable
 	/**
 	 * Used for raycasting with this {@code PhysicsEntity}'s shape
 	 *
-	 * @see nschank.engn.shape.collide.Ray
 	 * @param ray
 	 * 		A {@code Ray} which may be colliding with this {@code PhysicsEntity}
+	 *
 	 * @return Either the distance from the ray's point to its collision with this {@code PhysicsEntity}, or
-	 * 		{@code Optional.absent()}
+	 * {@code Optional.absent()}
+	 *
+	 * @see nschank.engn.shape.collide.Ray
 	 */
 	Optional<Double> collisionWith(Ray ray);
 	/**
@@ -113,7 +118,7 @@ public interface PhysicsEntity extends Entity, Drawable
 	 * 		Another {@code PhysicsEntity} which may be colliding with this one
 	 *
 	 * @return The {@code PhysCollision} between this {@code PhysicsEntity} and another, if they are colliding. Otherwise,
-	 * 		returns {@code Optional.absent()}
+	 * returns {@code Optional.absent()}
 	 */
 	Optional<PhysCollision> collisionWith(PhysicsEntity physicsEntity);
 	/**
@@ -136,6 +141,7 @@ public interface PhysicsEntity extends Entity, Drawable
 	double getCoefficientOfRestitutionSqrt();
 	/**
 	 * Used by the {@code PhysCollision} class. TODO
+	 *
 	 * @return The square root of the coefficient of static friction.
 	 */
 	double getCoefficientOfStaticFrictionSqrt();
@@ -146,11 +152,13 @@ public interface PhysicsEntity extends Entity, Drawable
 	/**
 	 * The mass moment of inertia of this {@code PhysicsEntity}, calculated by multiplying the moment of inertia of the
 	 * {@code PhysicsEntity}'s shape, and its mass.
+	 *
 	 * @return The moment of inertia of this {@code PhysicsEntity}
 	 */
 	double getMomentOfInertia();
 	/**
 	 * TODO: counterclockwise, I think
+	 *
 	 * @return The current rotational velocity of this {@code PhysicsEntity}, in radians per second
 	 */
 	double getRotationalVelocity();
@@ -168,6 +176,7 @@ public interface PhysicsEntity extends Entity, Drawable
 	 * Whenever a {@code PhysCollision} is created by {@code collisionWith(PhysicsEntity)}, this method causes the overlap
 	 * between this {@code PhysicsEntity} and another to be undone using the MTV. Depending on {@code reactionType},
 	 * this method may also enforce friction, impulse, or both.
+	 *
 	 * @param collision
 	 * 		A {@code PhysCollision} between this {@code PhysicsEntity} and another {@code PhysicsEntity}
 	 * @param reactionType
@@ -177,6 +186,7 @@ public interface PhysicsEntity extends Entity, Drawable
 	/**
 	 * Adds to the current angle of this {@code PhysicsEntity}
 	 * TODO counterclockwise?
+	 *
 	 * @param plusTheta
 	 * 		How much to add to the current angle of this {@code PhysicsEntity}
 	 */
@@ -277,26 +287,26 @@ public interface PhysicsEntity extends Entity, Drawable
 	 * - :boundaryGroups	->	List<Double>; which boundary groups this object is contained by
 	 * - :centerPosition	->	Dimensional; the center position of :shape
 	 * - :coefficientOfDynamicFrictionSqrt
-	 * 						-> 	double; the coefficient of dynamic friction of this {@code PhysicsEntity}
+	 * -> 	double; the coefficient of dynamic friction of this {@code PhysicsEntity}
 	 * - :coefficientOfRestitutionSqrt
-	 * 						->	double; the coefficient of restitution of this {@code PhysicsEntity}
+	 * ->	double; the coefficient of restitution of this {@code PhysicsEntity}
 	 * - :coefficientOfStaticFrictionSqrt
-	 * 						->	double; the coefficient of static friction of this {@code PhysicsEntity}
+	 * ->	double; the coefficient of static friction of this {@code PhysicsEntity}
 	 * - :collisionGroups	->	List<Double>; which collision groups this object is contained by
 	 * - :color				->	Color; the color of :shape
 	 * - :deriv{number}		->	Dimensional; where {number} is an integer greater than {@value 0}. That derivative of
-	 * 							position.
+	 * position.
 	 * - :forceGroups		->	List<Double>; which force groups this object is contained by
 	 * - :hasSprite			-> 	boolean; whether this PhysicsEntity has a :sprite property, which will be
-	 * 							drawn instead of :shape on each draw tick
+	 * drawn instead of :shape on each draw tick
 	 * - :height			->	double; the height of :shape
 	 * - :mass				->	double; the mass of this {@code PhysicsEntity}
 	 * - :rayGroups			->	List<Double>; which ray groups this object is contained by
 	 * - :rderiv{number}	->	double; where {number} is an integer greater than {@value 0}. That derivative of
-	 * 							rotation.
+	 * rotation.
 	 * - :rotation			->	double; the angle of :shape, in radians from the x axis
 	 * - :shape				->	Collidable; the shape of this {@code PhysicsEntity}. This shape will be drawn if
-	 * 							:hasSprite is not present or is {@literal false}.
+	 * :hasSprite is not present or is {@literal false}.
 	 * - :sprite			->	Sprite; a sprite to draw on each draw tick, instead of :shape
 	 * - :velocity			-> 	Dimensional; the velocity of this {@code PhysicsEntity}
 	 * - :width				->	double; the width of :shape
@@ -325,6 +335,7 @@ public interface PhysicsEntity extends Entity, Drawable
 	{
 		/**
 		 * The impulse that should be added to the primary {@code PhysicsEntity} in the collision.
+		 *
 		 * @return A {@code Vector} representing the impulse of this collision
 		 */
 		Vector getImpulse();
@@ -376,27 +387,4 @@ public interface PhysicsEntity extends Entity, Drawable
 		FRICTION_AND_IMPULSE
 	}
 
-	/**
-	 * Created by Nicolas Schank for package nschank.engn.play.phys
-	 * Created on 3 Jun 2014
-	 * Last updated on 3 Jun 2014
-	 *
-	 * A {@code RuntimeException} thrown whenever a property is set or gotten, and starts with a colon (:), but does not
-	 * have a real internal effect.
-	 *
-	 * @author nschank, Brown University
-	 * @version 1.1
-	 */
-	public static class NonexistentInternalPropertyException extends RuntimeException
-	{
-		/**
-		 * Creates an exception due to the given, non-internal property
-		 * @param noninternalProperty
-		 * 		A property which starts with a colon (:), but is not a real internal property.
-		 */
-		public NonexistentInternalPropertyException(String noninternalProperty)
-		{
-			super("The property " + noninternalProperty + " is formatted as an internal property, but will have no internal effect.");
-		}
-	}
 }
